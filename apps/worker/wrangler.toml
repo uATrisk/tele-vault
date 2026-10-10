@@ -10,7 +10,7 @@ binding = "ASSETS"
 [[d1_databases]]
 binding = "DB"
 database_name = "televault-db"
-database_id = "local-televault-d1-id"
+database_id = "c641e04d-6b45-44ba-abba-773eb7b0079c"
 migrations_dir = "migrations"
 
 [triggers]
