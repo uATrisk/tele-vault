@@ -72,26 +72,32 @@ export const DriveFolderCard: React.FC<DriveFolderCardProps> = ({
           } catch {}
         }
       }}
-      className={`group relative flex items-center justify-between h-12 px-3.5 rounded-card select-none transition-all duration-150 cursor-pointer border ${
+      className={`group relative flex items-center justify-between h-12 px-3.5 rounded-xl select-none transition-all duration-150 cursor-pointer border active:scale-[0.985] ${
         isDragOver
-          ? 'bg-selected/50 border-accent ring-2 ring-accent'
+          ? 'bg-accent/15 border-accent ring-2 ring-accent'
           : isSelected
-          ? 'bg-selected text-text-on-selected border-transparent'
-          : 'bg-card text-text-primary border-transparent hover:bg-hover'
+          ? 'bg-[#C2E7FF] dark:bg-[#004A77] text-[#001D35] dark:text-[#C2E7FF] border-[#0B57D0]/40 dark:border-[#A8C7FA]/40 ring-1 ring-[#0B57D0] dark:ring-[#A8C7FA]'
+          : 'bg-[#F0F4F9] dark:bg-[#1E1F20] text-text-primary border-transparent hover:bg-[#E9EEF6] dark:hover:bg-[#282A2C]'
       }`}
     >
       {/* Left: Folder Icon & Name */}
       <div className="flex items-center gap-3 overflow-hidden mr-2">
         <Icon
           name="folder"
-          size={22}
+          size={20}
           className={
             isSelected
-              ? 'text-text-on-selected'
-              : 'text-[#5F6368] dark:text-[#9AA0A6] shrink-0'
+              ? 'text-[#0B57D0] dark:text-[#A8C7FA]'
+              : 'text-[#444746] dark:text-[#C4C7C5] shrink-0'
           }
         />
-        <span className="text-sm font-medium truncate tracking-tight">{folder.name}</span>
+        <span
+          className={`text-[13px] font-medium truncate tracking-tight ${
+            isSelected ? 'text-[#001D35] dark:text-[#C2E7FF]' : 'text-[#1F1F1F] dark:text-[#E3E3E3]'
+          }`}
+        >
+          {folder.name}
+        </span>
         {(folder.starred || folder.favorite) && (
           <Icon name="star_filled" size={14} className="text-amber-500 shrink-0" />
         )}
@@ -106,7 +112,7 @@ export const DriveFolderCard: React.FC<DriveFolderCardProps> = ({
           e.stopPropagation();
           setIsMenuOpen(true);
         }}
-        className={`p-1 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10 transition-opacity ${
+        className={`p-1 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10 transition-opacity shrink-0 ${
           isMenuOpen || isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
         }`}
       >

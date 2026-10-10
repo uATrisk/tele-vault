@@ -23,7 +23,7 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     return {
       category: 'folder',
       icon: 'folder',
-      color: 'text-[#5F6368] dark:text-[#9AA0A6]',
+      color: 'text-[#444746] dark:text-[#C4C7C5]',
       label: 'Folder',
       previewable: false
     };
@@ -36,7 +36,7 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     return {
       category: 'image',
       icon: 'image',
-      color: 'text-[#D93025] dark:text-[#F28B82]',
+      color: 'text-[#EA4335] dark:text-[#F28B82]',
       label: 'Image',
       previewable: true
     };
@@ -46,7 +46,7 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     return {
       category: 'video',
       icon: 'video',
-      color: 'text-[#D93025] dark:text-[#F28B82]',
+      color: 'text-[#EA4335] dark:text-[#F28B82]',
       label: 'Video',
       previewable: true
     };
@@ -56,7 +56,7 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     return {
       category: 'pdf',
       icon: 'pdf',
-      color: 'text-[#D93025] dark:text-[#F28B82]',
+      color: 'text-[#EA4335] dark:text-[#F28B82]',
       label: 'PDF',
       previewable: false
     };
@@ -66,7 +66,7 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     return {
       category: 'audio',
       icon: 'audio',
-      color: 'text-[#5F6368] dark:text-[#9AA0A6]',
+      color: 'text-[#9334E6] dark:text-[#D7AEFB]',
       label: 'Audio',
       previewable: false
     };
@@ -78,13 +78,32 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     lowerMime.includes('compressed') ||
     lowerName.endsWith('.zip') ||
     lowerName.endsWith('.tar') ||
-    lowerName.endsWith('.gz')
+    lowerName.endsWith('.gz') ||
+    lowerName.endsWith('.rar') ||
+    lowerName.endsWith('.7z')
   ) {
     return {
       category: 'archive',
       icon: 'archive',
-      color: 'text-[#5F6368] dark:text-[#9AA0A6]',
+      color: 'text-[#F29900] dark:text-[#FDD663]',
       label: 'Archive',
+      previewable: false
+    };
+  }
+
+  if (
+    lowerMime.includes('spreadsheet') ||
+    lowerMime.includes('excel') ||
+    lowerName.endsWith('.xls') ||
+    lowerName.endsWith('.xlsx') ||
+    lowerName.endsWith('.csv') ||
+    lowerName.endsWith('.tsv')
+  ) {
+    return {
+      category: 'doc',
+      icon: 'doc',
+      color: 'text-[#0F9D58] dark:text-[#81C995]',
+      label: 'Spreadsheet',
       previewable: false
     };
   }
@@ -94,12 +113,14 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     lowerMime.includes('word') ||
     lowerMime.includes('document') ||
     lowerName.endsWith('.txt') ||
-    lowerName.endsWith('.md')
+    lowerName.endsWith('.md') ||
+    lowerName.endsWith('.doc') ||
+    lowerName.endsWith('.docx')
   ) {
     return {
       category: 'doc',
       icon: 'doc',
-      color: 'text-[#4285F4] dark:text-[#8AB4F8]',
+      color: 'text-[#1A73E8] dark:text-[#8AB4F8]',
       label: 'Document',
       previewable: false
     };

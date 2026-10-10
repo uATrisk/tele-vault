@@ -87,7 +87,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
 
   return (
     <header className="h-16 px-4 flex items-center justify-between gap-4 bg-page select-none shrink-0 border-b border-divider/20 sm:border-none">
-      {/* Left: Hamburger (mobile), Shield Logo + TeleVault wordmark */}
+      {/* Left: Hamburger (mobile), Google Drive-styled logo + TeleVault wordmark */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 sm:min-w-[240px] shrink-0">
         {onToggleSidebar && (
           <IconButton
@@ -99,41 +99,46 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
             <Icon name="menu" size={20} />
           </IconButton>
         )}
-        <div className="flex items-center gap-2 sm:gap-2.5 cursor-pointer" onClick={() => (window.location.hash = '#/drive')}>
-          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
-            <Icon name="shield" size={24} />
-          </div>
-          <span className="text-[20px] sm:text-[22px] font-medium tracking-tight text-text-primary hidden sm:inline">
+        <div
+          className="flex items-center gap-2.5 cursor-pointer select-none group"
+          onClick={() => (window.location.hash = '#/drive')}
+        >
+          <svg className="w-8 h-8 shrink-0 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 24" fill="none">
+            <path d="M8.4 3.5h7.2l6.4 11H14.8L8.4 3.5z" fill="#FFBA00"/>
+            <path d="M2 14.5l3.6-6.3 6.4 11H4.4L2 14.5z" fill="#00AC47"/>
+            <path d="M15.6 19.2H4.4l3.6-6.3h11.2l-3.6 6.3z" fill="#2684FC"/>
+          </svg>
+          <span className="text-[22px] font-normal tracking-tight text-[#444746] dark:text-[#E3E3E3] hidden sm:inline">
             TeleVault
           </span>
         </div>
       </div>
 
-      {/* Center: Search pill */}
+      {/* Center: Google Drive Search Pill */}
       <div className="flex-1 max-w-[720px] min-w-[120px]">
-        <div className="relative flex items-center w-full h-11 sm:h-12 rounded-full bg-search focus-within:bg-surface focus-within:shadow-md border border-transparent focus-within:border-divider/30 transition-all duration-150 px-3 sm:px-3.5">
-          <Icon name="search" size={20} className="text-text-secondary shrink-0 mr-2 sm:mr-3" />
+        <div className="relative flex items-center w-full h-12 rounded-full bg-[#E9EEF6] dark:bg-[#282A2C] focus-within:bg-white dark:focus-within:bg-[#1E1F20] focus-within:shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] transition-all duration-200 ease-out px-4">
+          <Icon name="search" size={20} className="text-[#444746] dark:text-[#C4C7C5] shrink-0 mr-3" />
           <input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search in My Drive"
-            className="w-full bg-transparent text-sm text-text-primary placeholder:text-text-secondary focus:outline-none"
+            placeholder="Search in Drive"
+            className="w-full bg-transparent text-[15px] text-text-primary placeholder:text-text-secondary/70 focus:outline-none"
           />
           {searchQuery ? (
             <IconButton
               size="sm"
               aria-label="Clear search"
               onClick={() => onSearchChange('')}
-              className="text-text-secondary shrink-0 ml-1"
+              className="text-text-secondary hover:text-text-primary shrink-0 ml-1"
             >
-              <Icon name="close" size={16} />
+              <Icon name="close" size={18} />
             </IconButton>
           ) : (
             <Tooltip text="Search options">
-              <IconButton size="sm" aria-label="Search filters" className="text-text-secondary shrink-0 ml-1">
-                <Icon name="tune" size={16} />
+              <IconButton size="sm" aria-label="Search filters" className="text-text-secondary hover:text-text-primary shrink-0 ml-1">
+                <Icon name="tune" size={18} />
               </IconButton>
             </Tooltip>
           )}

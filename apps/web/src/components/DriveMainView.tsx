@@ -147,7 +147,7 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
 
   return (
     <div
-      className="relative flex-1 flex flex-col h-full bg-surface rounded-panel overflow-hidden border border-divider/40 shadow-sm"
+      className="relative flex-1 flex flex-col h-full bg-white dark:bg-[#131314] rounded-panel overflow-hidden border border-divider/30 shadow-[0_1px_3px_0_rgba(60,64,67,0.08),0_4px_12px_2px_rgba(60,64,67,0.05)]"
       onDragOver={(e) => {
         // Only trigger drop overlay if dragging external OS files
         if (e.dataTransfer.types.includes('Files')) {
@@ -253,16 +253,16 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
       )}
 
       {/* 4. Main Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 space-y-7">
         {totalItemsCount === 0 ? (
           <DriveEmptyState type={getEmptyType()} searchQuery={searchQuery} />
         ) : isGridView ? (
-          <div className="space-y-6">
+          <div className="space-y-7">
             {/* Folders Section */}
             {sortedFolders.length > 0 && (
               <section className="space-y-3">
-                <h3 className="text-sm font-medium text-text-primary">Folders</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <h3 className="text-sm font-semibold text-text-primary tracking-tight">Folders</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                   {sortedFolders.map((folder) => (
                     <DriveFolderCard
                       key={folder.id}
@@ -284,8 +284,8 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
             {/* Files Section */}
             {sortedFiles.length > 0 && (
               <section className="space-y-3">
-                <h3 className="text-sm font-medium text-text-primary">Files</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                <h3 className="text-sm font-semibold text-text-primary tracking-tight">Files</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
                   {sortedFiles.map((file) => (
                     <DriveFileCard
                       key={file.id}

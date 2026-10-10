@@ -96,63 +96,42 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
         onSelect(e);
         setIsMenuOpen(true);
       }}
-      className={`group relative flex flex-col p-2 rounded-card select-none overflow-hidden cursor-pointer border transition-all duration-150 ${
+      className={`group relative flex flex-col p-3 rounded-2xl select-none cursor-pointer border transition-all duration-200 ease-out ${
         isSelected
-          ? 'bg-selected border-accent/40 ring-1 ring-accent'
-          : 'bg-card border-transparent hover:bg-hover'
+          ? 'bg-[#C2E7FF] dark:bg-[#004A77]/40 border-[#0B57D0]/40 dark:border-[#A8C7FA]/40 ring-1 ring-[#0B57D0] dark:ring-[#A8C7FA]'
+          : 'bg-[#F0F4F9] dark:bg-[#1E1F20] border-transparent hover:bg-[#E9EEF6] dark:hover:bg-[#282A2C] hover:shadow-sm'
       }`}
     >
-      {/* Top Checkbox Overlay */}
-      <div
-        className={`absolute top-3.5 left-3.5 z-10 transition-opacity duration-150 ${
-          isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <Checkbox
-          checked={isSelected}
-          onChange={() => onSelect({} as any)}
-          ariaLabel={`Select ${item.name}`}
-        />
-      </div>
-
-      {/* Thumbnail Area - perfectly centered inside padded card */}
-      <div className="relative w-full aspect-[4/3] bg-surface flex items-center justify-center overflow-hidden rounded-xl">
-        {thumbUrl ? (
-          <img
-            src={thumbUrl}
-            alt={item.name}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
-          />
-        ) : (
-          <div className="flex flex-col items-center justify-center p-4">
-            <Icon name={meta.icon} size={48} className={meta.color} />
+      {/* 1. Top Header Row: File Icon / Checkbox, Name, Star, and ⋮ Menu */}
+      <div className="flex items-center justify-between h-7 mb-2 gap-1.5 min-w-0">
+        <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
+          {/* Checkbox: smooth fade in on hover or when selected */}
+          <div
+            className={`transition-opacity duration-150 shrink-0 ${
+              isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Checkbox
+              checked={isSelected}
+              onChange={() => onSelect({} as any)}
+              ariaLabel={`Select ${item.name}`}
+            />
           </div>
-        )}
 
-        {/* Video duration badge */}
-        {meta.category === 'video' && (
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/70 text-white text-[11px] font-mono">
-            <Icon name="play_arrow" size={12} />
-            {item.durationMs
-              ? `${Math.floor(item.durationMs / 60000)}:${Math.floor((item.durationMs % 60000) / 1000).toString().padStart(2, '0')}`
-              : 'Video'}
-          </div>
-        )}
-      </div>
+          {/* File Type Icon */}
+          <Icon name={meta.icon} size={18} className={`${meta.color} shrink-0`} />
 
-      {/* Footer 44px */}
-      <div className="flex items-center justify-between h-11 px-1.5 pt-1 gap-2">
-        <div className="flex items-center gap-2 overflow-hidden flex-1">
-          <Icon name={meta.icon} size={18} className={meta.color} />
+          {/* Truncated File Name */}
           <span
-            className={`text-sm font-medium truncate ${
-              isSelected ? 'text-text-on-selected' : 'text-text-primary'
+            title={item.name}
+            className={`text-[13px] font-medium truncate tracking-tight ${
+              isSelected ? 'text-[#001D35] dark:text-[#C2E7FF]' : 'text-text-primary'
             }`}
           >
             {item.name}
           </span>
+
           {(item.starred || item.favorite) && (
             <Icon name="star_filled" size={14} className="text-amber-500 shrink-0" />
           )}
@@ -167,12 +146,43 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
             e.stopPropagation();
             setIsMenuOpen(true);
           }}
-          className={`p-1 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10 transition-opacity ${
+          className={`p-1 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10 transition-opacity shrink-0 ${
             isMenuOpen || isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
           }`}
         >
           <Icon name="more_vert" size={18} />
         </button>
+      </div>
+
+      {/* 2. Main Preview Area - Google Drive Canvas */}
+      <div className="relative w-full aspect-[16/10] bg-white dark:bg-[#131314] rounded-xl overflow-hidden flex items-center justify-center border border-black/[0.04] dark:border-white/[0.04] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.02)]">
+        {thumbUrl ? (
+          <img
+            src={thumbUrl}
+            alt={item.name}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+          />
+        ) : (
+          /* Realistic Document Preview Sheet */
+          <div className="flex flex-col items-center justify-center p-3 w-full h-full">
+            <div className="w-16 h-20 bg-surface rounded shadow-sm border border-divider/40 flex flex-col items-center justify-center gap-1.5 p-2 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:shadow">
+              <Icon name={meta.icon} size={28} className={meta.color} />
+              <div className="w-8 h-1 bg-divider/60 rounded-full" />
+              <div className="w-5 h-1 bg-divider/40 rounded-full" />
+            </div>
+          </div>
+        )}
+
+        {/* Video duration badge */}
+        {meta.category === 'video' && (
+          <div className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded bg-black/75 backdrop-blur-[2px] text-white text-[10px] font-mono shadow-sm">
+            <Icon name="play_arrow" size={12} />
+            {item.durationMs
+              ? `${Math.floor(item.durationMs / 60000)}:${Math.floor((item.durationMs % 60000) / 1000).toString().padStart(2, '0')}`
+              : 'Video'}
+          </div>
+        )}
       </div>
 
       {/* Context Menu */}

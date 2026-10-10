@@ -56,45 +56,60 @@ export const DriveBreadcrumbRow: React.FC<DriveBreadcrumbRowProps> = ({
   return (
     <div className="flex items-center justify-between h-12 px-4 select-none shrink-0 border-b border-divider/30">
       {/* Breadcrumb Trail */}
-      <div className="flex items-center gap-1.5 overflow-hidden text-base">
-        <button
-          type="button"
-          onClick={() => onNavigate(null)}
-          className={`px-2 py-1 rounded-lg text-text-primary hover:bg-hover transition-colors font-medium ${
-            !currentFolder ? 'text-lg font-semibold' : 'text-text-secondary'
-          }`}
-        >
-          My Drive
-        </button>
+      <div className="flex items-center gap-1 overflow-hidden">
+        {!currentFolder ? (
+          <button
+            ref={dropdownRef}
+            type="button"
+            onClick={() => setIsFolderMenuOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xl font-normal tracking-tight text-text-primary hover:bg-hover transition-colors cursor-pointer"
+          >
+            <span>My Drive</span>
+            <Icon name="chevron_down" size={18} className="text-text-secondary mt-0.5" />
+          </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => onNavigate(null)}
+              className="px-2.5 py-1 rounded-lg text-sm sm:text-base font-normal text-text-secondary hover:text-text-primary hover:bg-hover transition-colors cursor-pointer shrink-0"
+            >
+              My Drive
+            </button>
 
-        {breadcrumbs.map((crumb, idx) => {
-          const isLast = idx === breadcrumbs.length - 1;
-          return (
-            <React.Fragment key={crumb.id}>
-              <Icon name="chevron_right" size={16} className="text-text-secondary/60 shrink-0" />
-              <button
-                type="button"
-                onClick={() => onNavigate(crumb.id)}
-                className={`px-2 py-1 rounded-lg truncate max-w-[160px] hover:bg-hover transition-colors font-medium ${
-                  isLast ? 'text-lg font-semibold text-text-primary' : 'text-text-secondary'
-                }`}
-              >
-                {crumb.name}
-              </button>
-            </React.Fragment>
-          );
-        })}
-
-        {/* Current Folder Action Dropdown Arrow */}
-        <button
-          ref={dropdownRef}
-          type="button"
-          aria-label="Folder actions menu"
-          onClick={() => setIsFolderMenuOpen(true)}
-          className="p-1 rounded-full text-text-secondary hover:text-text-primary hover:bg-hover transition-colors"
-        >
-          <Icon name="chevron_down" size={18} />
-        </button>
+            {breadcrumbs.map((crumb, idx) => {
+              const isLast = idx === breadcrumbs.length - 1;
+              if (isLast) {
+                return (
+                  <React.Fragment key={crumb.id}>
+                    <Icon name="chevron_right" size={16} className="text-text-secondary/50 shrink-0" />
+                    <button
+                      ref={dropdownRef}
+                      type="button"
+                      onClick={() => setIsFolderMenuOpen(true)}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xl font-normal tracking-tight text-text-primary hover:bg-hover transition-colors cursor-pointer max-w-[200px] sm:max-w-[320px] overflow-hidden"
+                    >
+                      <span className="truncate">{crumb.name}</span>
+                      <Icon name="chevron_down" size={18} className="text-text-secondary mt-0.5 shrink-0" />
+                    </button>
+                  </React.Fragment>
+                );
+              }
+              return (
+                <React.Fragment key={crumb.id}>
+                  <Icon name="chevron_right" size={16} className="text-text-secondary/50 shrink-0" />
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(crumb.id)}
+                    className="px-2 py-1 rounded-lg truncate max-w-[140px] text-sm sm:text-base font-normal text-text-secondary hover:text-text-primary hover:bg-hover transition-colors cursor-pointer shrink-0"
+                  >
+                    {crumb.name}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+          </>
+        )}
 
         {isFolderMenuOpen && dropdownRef.current && (
           <Menu

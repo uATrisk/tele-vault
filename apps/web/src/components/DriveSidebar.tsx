@@ -59,16 +59,23 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
   const sidebarContent = (
     <div className="flex flex-col h-full py-2 px-3 justify-between select-none">
       <div className="space-y-4">
-        {/* + New Button */}
+        {/* Google Drive + New Floating Action Button */}
         <div className="px-1 py-1">
           <button
             ref={newButtonRef}
             type="button"
             onClick={() => setIsNewMenuOpen(true)}
-            className="flex items-center gap-3 h-14 px-5 rounded-2xl bg-surface hover:bg-hover active:bg-hover text-text-primary font-medium text-sm shadow-card hover:shadow-md transition-all duration-150 border border-divider/40 w-full sm:w-auto md:w-auto justify-start sm:justify-center md:justify-start"
+            className="flex items-center gap-3.5 h-14 px-5 rounded-2xl bg-white dark:bg-[#282A2C] hover:bg-[#F8FAFD] dark:hover:bg-[#333538] text-text-primary font-medium text-sm shadow-fab hover:shadow-fab-hover active:scale-[0.98] transition-all duration-200 cursor-pointer w-full sm:w-auto md:w-auto justify-start sm:justify-center md:justify-start"
           >
-            <Icon name="add" size={24} className="text-accent shrink-0" />
-            <span className="inline sm:hidden md:inline">New</span>
+            {/* Authentic Google 4-color Plus Icon */}
+            <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="none">
+              <path d="M10 5a2 2 0 0 1 4 0v6h-4V5z" fill="#EA4335" />
+              <path d="M19 10a2 2 0 0 1 0 4h-6v-4h6z" fill="#4285F4" />
+              <path d="M14 19a2 2 0 0 1-4 0v-6h4v6z" fill="#34A853" />
+              <path d="M5 14a2 2 0 0 1 0-4h6v4H5z" fill="#FBBC05" />
+              <path d="M10 10h4v4h-4z" fill="#4285F4" />
+            </svg>
+            <span className="inline sm:hidden md:inline font-medium text-[15px]">New</span>
           </button>
         </div>
 
@@ -84,16 +91,16 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
                   onRouteChange(item.route);
                   onCloseMobile?.();
                 }}
-                className={`flex items-center gap-4 w-full h-10 px-4 rounded-full text-sm font-medium transition-colors ${
+                className={`flex items-center gap-4 w-full h-10 px-4 rounded-full text-sm font-medium transition-all duration-150 ${
                   isActive
-                    ? 'bg-selected text-text-on-selected'
-                    : 'text-text-secondary hover:text-text-primary hover:bg-hover'
+                    ? 'bg-[#C2E7FF] dark:bg-[#004A77] text-[#001D35] dark:text-[#C2E7FF] font-semibold'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-[#1F1F1F]/[0.06] dark:hover:bg-[#E3E3E3]/[0.08]'
                 }`}
               >
                 <Icon
                   name={item.icon}
                   size={20}
-                  className={isActive ? 'text-text-on-selected shrink-0' : 'text-text-secondary shrink-0'}
+                  className={isActive ? 'text-[#001D35] dark:text-[#C2E7FF] shrink-0' : 'text-text-secondary shrink-0'}
                 />
                 <span className="truncate inline sm:hidden md:inline">{item.label}</span>
               </button>
