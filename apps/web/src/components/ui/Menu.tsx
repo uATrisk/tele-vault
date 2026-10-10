@@ -18,6 +18,7 @@ export interface MenuProps {
   onClose: () => void;
   anchorPoint?: { x: number; y: number } | null;
   className?: string;
+  headerContent?: React.ReactNode;
 }
 
 export const Menu: React.FC<MenuProps> = ({
@@ -25,7 +26,8 @@ export const Menu: React.FC<MenuProps> = ({
   isOpen,
   onClose,
   anchorPoint,
-  className = ''
+  className = '',
+  headerContent
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -59,7 +61,7 @@ export const Menu: React.FC<MenuProps> = ({
   let style: React.CSSProperties = {};
   if (anchorPoint) {
     const x = Math.min(anchorPoint.x, window.innerWidth - 260);
-    const y = Math.min(anchorPoint.y, window.innerHeight - (items.length * 40 + 40));
+    const y = Math.min(anchorPoint.y, window.innerHeight - (items.length * 44 + 60));
     style = {
       position: 'fixed',
       left: `${Math.max(8, x)}px`,
@@ -72,11 +74,12 @@ export const Menu: React.FC<MenuProps> = ({
       ref={menuRef}
       style={style}
       role="menu"
-      className={`z-50 min-w-[240px] py-1.5 bg-surface text-text-primary rounded-xl shadow-menu border border-divider/40 select-none animate-in fade-in duration-150 ${className}`}
+      className={`z-50 min-w-[240px] p-1.5 bg-surface text-text-primary rounded-2xl shadow-[0_6px_28px_rgba(0,0,0,0.15)] border border-divider/50 select-none animate-in fade-in zoom-in-95 duration-150 ${className}`}
     >
+      {headerContent}
       {items.map((item, idx) => (
         <React.Fragment key={idx}>
-          {item.dividerAbove && <div className="my-1 border-t border-divider" />}
+          {item.dividerAbove && <div className="my-1.5 mx-2 border-t border-divider/40" />}
           <button
             type="button"
             role="menuitem"
@@ -86,11 +89,11 @@ export const Menu: React.FC<MenuProps> = ({
               item.onClick?.();
               onClose();
             }}
-            className={`w-full h-9 px-3.5 flex items-center gap-3 text-sm text-left transition-colors ${
+            className={`w-full h-9.5 px-3 rounded-xl flex items-center gap-3 text-[13.5px] font-medium text-left transition-colors ${
               item.disabled
                 ? 'opacity-40 cursor-not-allowed'
                 : item.danger
-                ? 'text-danger hover:bg-hover active:bg-hover'
+                ? 'text-danger hover:bg-danger/10 active:bg-danger/15'
                 : 'text-text-primary hover:bg-hover active:bg-hover'
             }`}
           >

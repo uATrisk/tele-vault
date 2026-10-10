@@ -167,28 +167,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </IconButton>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-1 px-4 sm:px-6 border-b border-divider/30 text-xs font-medium shrink-0 overflow-x-auto scrollbar-none">
-          {[
-            { id: 'general' as const, label: 'General & Security', icon: 'shield' as const },
-            { id: 'doctor' as const, label: 'Telegram Health', icon: 'cloud' as const },
-            { id: 'stats' as const, label: 'Storage & Backup', icon: 'archive' as const },
-            { id: 'passphrase' as const, label: 'Change Passphrase', icon: 'lock' as const }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 py-3 px-3.5 border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'border-accent text-accent font-semibold'
-                  : 'border-transparent text-text-secondary hover:text-text-primary hover:border-divider'
-              }`}
-            >
-              <Icon name={tab.icon} size={15} />
-              <span>{tab.label}</span>
-            </button>
-          ))}
+        {/* Tab Navigation (Material 3 Segmented Pill Bar) */}
+        <div className="px-4 sm:px-6 py-2.5 border-b border-divider/20 shrink-0 bg-[#F8FAFD]/50 dark:bg-[#161718]/50">
+          <div className="flex items-center gap-1 p-1 bg-[#EDF2FA] dark:bg-[#282A2C] rounded-xl text-xs font-medium overflow-x-auto scrollbar-none">
+            {[
+              { id: 'general' as const, label: 'General & Security', icon: 'shield' as const },
+              { id: 'doctor' as const, label: 'Telegram Health', icon: 'cloud' as const },
+              { id: 'stats' as const, label: 'Storage & Backup', icon: 'archive' as const },
+              { id: 'passphrase' as const, label: 'Change Passphrase', icon: 'lock' as const }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 py-2 px-3.5 rounded-lg transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-surface text-accent font-semibold shadow-xs ring-1 ring-black/5 dark:ring-white/10'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/5'
+                }`}
+              >
+                <Icon name={tab.icon} size={15} />
+                <span>{tab.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Body Content */}

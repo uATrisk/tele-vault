@@ -32,7 +32,8 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
   const lowerMime = (mime || '').toLowerCase();
   const lowerName = (name || '').toLowerCase();
 
-  if (lowerMime.startsWith('image/')) {
+  const isImageExt = /\.(png|jpe?g|gif|webp|bmp|svg|heic|ico|tiff)$/i.test(lowerName);
+  if (lowerMime.startsWith('image/') || isImageExt) {
     return {
       category: 'image',
       icon: 'image',
@@ -42,7 +43,8 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     };
   }
 
-  if (lowerMime.startsWith('video/')) {
+  const isVideoExt = /\.(mp4|webm|mkv|mov|avi|wmv|flv|m4v)$/i.test(lowerName);
+  if (lowerMime.startsWith('video/') || isVideoExt) {
     return {
       category: 'video',
       icon: 'video',
@@ -62,7 +64,8 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     };
   }
 
-  if (lowerMime.startsWith('audio/')) {
+  const isAudioExt = /\.(mp3|wav|ogg|m4a|flac|aac|wma)$/i.test(lowerName);
+  if (lowerMime.startsWith('audio/') || isAudioExt) {
     return {
       category: 'audio',
       icon: 'audio',
@@ -76,11 +79,7 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     lowerMime.includes('zip') ||
     lowerMime.includes('tar') ||
     lowerMime.includes('compressed') ||
-    lowerName.endsWith('.zip') ||
-    lowerName.endsWith('.tar') ||
-    lowerName.endsWith('.gz') ||
-    lowerName.endsWith('.rar') ||
-    lowerName.endsWith('.7z')
+    /\.(zip|tar|gz|rar|7z|bz2|xz)$/i.test(lowerName)
   ) {
     return {
       category: 'archive',
@@ -94,10 +93,7 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
   if (
     lowerMime.includes('spreadsheet') ||
     lowerMime.includes('excel') ||
-    lowerName.endsWith('.xls') ||
-    lowerName.endsWith('.xlsx') ||
-    lowerName.endsWith('.csv') ||
-    lowerName.endsWith('.tsv')
+    /\.(xls|xlsx|csv|tsv)$/i.test(lowerName)
   ) {
     return {
       category: 'doc',
@@ -112,10 +108,9 @@ export function getFileTypeMeta(mime: string, kind?: string, name?: string): Fil
     lowerMime.includes('text/') ||
     lowerMime.includes('word') ||
     lowerMime.includes('document') ||
-    lowerName.endsWith('.txt') ||
-    lowerName.endsWith('.md') ||
-    lowerName.endsWith('.doc') ||
-    lowerName.endsWith('.docx')
+    lowerMime.includes('presentation') ||
+    lowerMime.includes('powerpoint') ||
+    /\.(txt|md|doc|docx|ppt|pptx|rtf|json|xml|html)$/i.test(lowerName)
   ) {
     return {
       category: 'doc',

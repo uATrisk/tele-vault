@@ -4,10 +4,15 @@ import { Icon } from './ui/Icon';
 import { IconButton } from './ui/IconButton';
 import { Tooltip } from './ui/Tooltip';
 import { Menu, MenuItemProps } from './ui/Menu';
+import { NavRoute } from './DriveSidebar';
 
 interface DriveBreadcrumbRowProps {
   breadcrumbs: ItemManifest[];
   currentFolder: ItemManifest | null;
+  currentRoute?: NavRoute;
+  isFiltering?: boolean;
+  searchQuery?: string;
+  onClearSearch?: () => void;
   onNavigate: (folderId: string | null) => void;
   isGridView: boolean;
   onToggleViewMode: (grid: boolean) => void;
@@ -25,6 +30,10 @@ interface DriveBreadcrumbRowProps {
 export const DriveBreadcrumbRow: React.FC<DriveBreadcrumbRowProps> = ({
   breadcrumbs,
   currentFolder,
+  currentRoute = 'drive',
+  isFiltering = false,
+  searchQuery = '',
+  onClearSearch,
   onNavigate,
   isGridView,
   onToggleViewMode,
@@ -57,7 +66,31 @@ export const DriveBreadcrumbRow: React.FC<DriveBreadcrumbRowProps> = ({
     <div className="flex items-center justify-between h-12 px-4 select-none shrink-0 border-b border-divider/30">
       {/* Breadcrumb Trail */}
       <div className="flex items-center gap-1 overflow-hidden">
-        {!currentFolder ? (
+        {isFiltering ? (
+          <h2 className="flex items-center gap-2 px-3 py-1.5 min-w-0">
+            <span className="text-xl font-normal tracking-tight text-text-primary whitespace-nowrap">
+              Search results
+            </span>
+            {searchQuery && (
+              <span className="text-sm text-text-secondary truncate max-w-[200px]">
+                for &ldquo;{searchQuery}&rdquo;
+              </span>
+            )}
+            {onClearSearch && (
+              <button
+                type="button"
+                onClick={onClearSearch}
+                className="ml-2 text-xs text-accent hover:underline font-medium shrink-0"
+              >
+                Clear
+              </button>
+            )}
+          </h2>
+        ) : currentRoute !== 'drive' ? (
+          <h2 className="px-3 py-1.5 text-xl font-normal tracking-tight text-text-primary capitalize">
+            {currentRoute}
+          </h2>
+        ) : !currentFolder ? (
           <button
             ref={dropdownRef}
             type="button"

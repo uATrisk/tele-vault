@@ -313,6 +313,20 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
           isOpen={isAccountMenuOpen}
           onClose={() => setIsAccountMenuOpen(false)}
           anchorPoint={accountMenuAnchor}
+          headerContent={
+            <div className="px-3 py-2.5 mb-1 bg-[#EDF2FA]/80 dark:bg-[#282A2C]/80 rounded-xl border border-divider/20 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-accent text-white font-medium text-sm flex items-center justify-center shadow-xs shrink-0">
+                T
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-[13px] font-semibold text-text-primary truncate">TeleVault Master Vault</div>
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  <span className="truncate">Session Active &amp; Encrypted</span>
+                </div>
+              </div>
+            </div>
+          }
         />
       </div>
     </header>

@@ -50,6 +50,7 @@ interface DriveMainViewProps {
   modifiedFilter: FilterModified;
   onModifiedFilterChange: (mod: FilterModified) => void;
   searchQuery: string;
+  onSearchChange?: (q: string) => void;
 }
 
 const DriveUploadingCard: React.FC<{
@@ -174,7 +175,8 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
   onCategoryFilterChange,
   modifiedFilter,
   onModifiedFilterChange,
-  searchQuery
+  searchQuery,
+  onSearchChange
 }) => {
   const [isGridView, setIsGridView] = useState<boolean>(() => {
     const saved = localStorage.getItem('tv_view_mode');
@@ -285,10 +287,18 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
           onRename={selectedCount === 1 ? () => onRenameItem(selectedItems[0]) : undefined}
           onOpenDetails={onToggleDetails}
         />
-      ) : currentRoute === 'drive' && !isFiltering ? (
+      ) : (
         <DriveBreadcrumbRow
           breadcrumbs={breadcrumbs}
           currentFolder={currentFolder}
+          currentRoute={currentRoute}
+          isFiltering={isFiltering}
+          searchQuery={searchQuery}
+          onClearSearch={() => {
+            onCategoryFilterChange('all');
+            onModifiedFilterChange('all');
+            onSearchChange?.('');
+          }}
           onNavigate={onNavigateFolder}
           isGridView={isGridView}
           onToggleViewMode={handleToggleViewMode}
@@ -301,40 +311,6 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
           onRenameFolder={currentFolder ? () => onRenameItem(currentFolder) : undefined}
           onTrashFolder={currentFolder ? () => onTrashItems([currentFolder]) : undefined}
         />
-      ) : (
-        <div className="flex items-center justify-between h-12 px-4 border-b border-divider/30 shrink-0">
-          <h2 className="text-lg font-medium text-text-primary capitalize">
-            {searchQuery.trim()
-              ? `Search results for "${searchQuery}"`
-              : isFiltering
-              ? 'Filtered results'
-              : currentRoute}
-          </h2>
-          <div className="flex items-center gap-1">
-            <div className="flex items-center p-0.5 rounded-full bg-card border border-divider/30">
-              <button
-                type="button"
-                aria-label="List view"
-                onClick={() => handleToggleViewMode(false)}
-                className={`p-1.5 rounded-full ${
-                  !isGridView ? 'bg-surface text-accent shadow-sm' : 'text-text-secondary hover:text-text-primary'
-                }`}
-              >
-                <Icon name="list_view" size={18} />
-              </button>
-              <button
-                type="button"
-                aria-label="Grid view"
-                onClick={() => handleToggleViewMode(true)}
-                className={`p-1.5 rounded-full ${
-                  isGridView ? 'bg-surface text-accent shadow-sm' : 'text-text-secondary hover:text-text-primary'
-                }`}
-              >
-                <Icon name="grid_view" size={18} />
-              </button>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* 2. Filter Chips Row */}
@@ -347,12 +323,20 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
 
       {/* 3. Trash View Banner */}
       {currentRoute === 'trash' && (
-        <div className="flex items-center justify-between px-6 py-2.5 bg-card border-b border-divider/40 text-xs text-text-secondary shrink-0">
-          <span>Items in trash will be deleted forever after 30 days.</span>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 bg-[#EDF2FA] dark:bg-[#1E1F20] border-b border-divider/40 text-xs text-text-secondary shrink-0">
+          <div className="flex items-center gap-2 min-w-0">
+            <Icon name="info" size={16} className="text-accent shrink-0" />
+            <span className="truncate">Items in trash will be deleted forever after 30 days.</span>
+          </div>
           {totalItemsCount > 0 && (
-            <Button size="sm" variant="text" onClick={onEmptyTrash} className="text-danger">
-              Empty trash
-            </Button>
+            <button
+              type="button"
+              onClick={onEmptyTrash}
+              className="px-3.5 py-1.5 rounded-full text-xs font-medium text-danger hover:bg-danger/10 border border-danger/30 transition-all flex items-center gap-1.5 shrink-0 shadow-xs active:scale-95"
+            >
+              <Icon name="delete_forever" size={15} />
+              <span>Empty trash</span>
+            </button>
           )}
         </div>
       )}
@@ -467,12 +451,8 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
             </strong>
           </h3>
           <p className="text-xs text-text-secondary mt-1.5 text-center">
-            Files will be encrypted with client-side AES-256-GCM before reaching Telegram
+            Files will be securely stored in your private Telegram vault
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A73E8]/10 text-[#1A73E8] dark:text-[#8AB4F8] text-xs font-medium">
-            <Icon name="shield" size={14} />
-            Zero-knowledge encrypted cloud storage
-          </div>
         </div>
       )}
     </div>

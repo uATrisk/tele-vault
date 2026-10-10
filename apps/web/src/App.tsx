@@ -20,6 +20,7 @@ import {
   getDescendantIds,
   getUniqueName
 } from './utils/folderTree';
+import { getFileTypeMeta } from './utils/fileType';
 
 import { LoginScreen } from './components/LoginScreen';
 import { SetupWizard } from './components/SetupWizard';
@@ -417,20 +418,20 @@ export const App: React.FC = () => {
 
     // Filter by Category Chip
     if (categoryFilter !== 'all') {
-      if (categoryFilter === 'folders') result = result.filter((i) => i.kind === 'folder');
-      if (categoryFilter === 'images') result = result.filter((i) => i.kind !== 'folder' && i.mime.startsWith('image/'));
-      if (categoryFilter === 'videos') result = result.filter((i) => i.kind !== 'folder' && i.mime.startsWith('video/'));
-      if (categoryFilter === 'pdfs') result = result.filter((i) => i.kind !== 'folder' && i.mime === 'application/pdf');
-      if (categoryFilter === 'audio') result = result.filter((i) => i.kind !== 'folder' && i.mime.startsWith('audio/'));
-      if (categoryFilter === 'archives') {
-        result = result.filter(
-          (i) => i.kind !== 'folder' && (i.mime.includes('zip') || i.mime.includes('compressed') || i.name.endsWith('.zip'))
-        );
-      }
-      if (categoryFilter === 'docs') {
-        result = result.filter(
-          (i) => i.kind !== 'folder' && (i.mime.includes('text') || i.mime.includes('document') || i.name.endsWith('.pdf'))
-        );
+      if (categoryFilter === 'folders') {
+        result = result.filter((i) => i.kind === 'folder');
+      } else {
+        result = result.filter((i) => {
+          if (i.kind === 'folder') return false;
+          const meta = getFileTypeMeta(i.mime, i.kind, i.name);
+          if (categoryFilter === 'images') return meta.category === 'image';
+          if (categoryFilter === 'videos') return meta.category === 'video';
+          if (categoryFilter === 'pdfs') return meta.category === 'pdf';
+          if (categoryFilter === 'docs') return meta.category === 'doc';
+          if (categoryFilter === 'audio') return meta.category === 'audio';
+          if (categoryFilter === 'archives') return meta.category === 'archive';
+          return true;
+        });
       }
     }
 
@@ -993,6 +994,7 @@ export const App: React.FC = () => {
               modifiedFilter={modifiedFilter}
               onModifiedFilterChange={setModifiedFilter}
               searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
             />
           )}
         </main>

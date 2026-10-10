@@ -75,7 +75,7 @@ export const DriveSelectionToolbar: React.FC<DriveSelectionToolbarProps> = ({
               </Tooltip>
             )}
             {onDeleteForever && (
-              <Tooltip text="Delete forever">
+              <Tooltip text="Delete forever" align="right">
                 <IconButton aria-label="Delete forever" onClick={onDeleteForever}>
                   <Icon name="delete_forever" size={20} />
                 </IconButton>
@@ -99,12 +99,12 @@ export const DriveSelectionToolbar: React.FC<DriveSelectionToolbarProps> = ({
                 <Icon name={isStarred ? 'star_filled' : 'star'} size={20} />
               </IconButton>
             </Tooltip>
-            <Tooltip text="Move to trash">
+            <Tooltip text="Move to trash" align="right">
               <IconButton aria-label="Move to trash" onClick={onTrash}>
                 <Icon name="trash" size={20} />
               </IconButton>
             </Tooltip>
-            <Tooltip text="More actions">
+            <Tooltip text="More actions" align="right">
               <button
                 ref={overflowBtnRef}
                 type="button"

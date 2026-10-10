@@ -176,7 +176,7 @@ export const DriveDetailsPanel: React.FC<DriveDetailsPanelProps> = ({
             <div className="p-3.5 rounded-xl bg-accent/5 border border-accent/20 space-y-1.5">
               <div className="flex items-center gap-2 text-accent font-medium text-xs">
                 <Icon name="shield" size={16} />
-                <span>Zero-Knowledge Storage</span>
+                <span>Private Vault Storage</span>
               </div>
               <p className="text-[11px] text-text-secondary leading-normal">
                 End-to-end encrypted with AES-256-GCM. Stored as{' '}

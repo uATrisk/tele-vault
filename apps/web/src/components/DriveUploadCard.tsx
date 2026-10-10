@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UploadQueueItem } from '../upload/uploader';
 import { Icon } from './ui/Icon';
 import { IconButton } from './ui/IconButton';
@@ -35,12 +35,22 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
 }) => {
   const [isMinimized, setIsMinimized] = useState(false);
 
-  if (queue.length === 0) return null;
-
   const inProgress = queue.filter(
     (i) => i.status === 'uploading' || i.status === 'processing' || i.status === 'queued'
   );
   const allCompleted = inProgress.length === 0;
+
+  // Auto-hide floating upload card after 5 seconds of all uploads completing
+  useEffect(() => {
+    if (allCompleted && queue.length > 0) {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [allCompleted, queue.length, onClose]);
+
+  if (queue.length === 0) return null;
 
   // Calculate real aggregate byte progress
   const totalBytes = queue.reduce((acc, it) => acc + (it.size || 1), 0);
@@ -59,39 +69,39 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
       aria-label="Upload progress"
       className="fixed bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:bottom-6 z-50 sm:w-96 bg-surface dark:bg-[#1E1F20] text-text-primary rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.18)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.5)] border border-divider/60 select-none overflow-hidden transition-all duration-300 animate-in slide-in-from-bottom-4"
     >
-      {/* 1. Header (Google Drive Material 3 floating header) */}
+      {/* 1. Header (Google Drive Material 3 style) */}
       <div
-        className={`flex items-center justify-between px-4 py-3 bg-[#1F1F1F] dark:bg-[#2A2B2E] text-white transition-colors ${
-          isMinimized ? 'rounded-2xl' : 'rounded-t-2xl'
+        className={`flex items-center justify-between px-4 py-3 bg-[#EDF2FA] dark:bg-[#2A2B2E] text-text-primary dark:text-white border-b border-divider/30 transition-colors ${
+          isMinimized ? 'rounded-2xl border-none' : 'rounded-t-2xl'
         }`}
       >
         <div className="flex items-center gap-3 overflow-hidden flex-1 min-w-0">
           {allCompleted ? (
-            <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
               <Icon name="check" size={15} />
             </div>
           ) : (
-            <div className="w-7 h-7 rounded-full bg-blue-500/25 text-[#8AB4F8] flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-full bg-accent/15 text-accent dark:text-[#8AB4F8] flex items-center justify-center shrink-0">
               <Icon name="upload" size={15} className="animate-pulse" />
             </div>
           )}
 
           <div className="flex flex-col min-w-0 overflow-hidden">
-            <span className="text-[13px] font-medium tracking-tight truncate">{headerTitle}</span>
+            <span className="text-[13px] font-medium tracking-tight truncate text-text-primary dark:text-white">{headerTitle}</span>
             {!allCompleted && (
-              <span className="text-[11px] text-white/70 font-mono tracking-tight truncate">
+              <span className="text-[11px] text-text-secondary dark:text-white/70 font-mono tracking-tight truncate">
                 {overallPct}% • {formatBytes(uploadedBytes)} of {formatBytes(totalBytes)}
               </span>
             )}
           </div>
         </div>
 
-        <div className="flex items-center gap-0.5 text-white/80 shrink-0 ml-2">
+        <div className="flex items-center gap-0.5 text-text-secondary dark:text-white/80 shrink-0 ml-2">
           <IconButton
             size="sm"
             aria-label={isMinimized ? 'Expand upload card' : 'Minimize upload card'}
             onClick={() => setIsMinimized(!isMinimized)}
-            className="text-white/80 hover:text-white hover:bg-white/10"
+            className="text-text-secondary dark:text-white/80 hover:text-text-primary dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
           >
             <Icon
               name="chevron_down"
@@ -109,7 +119,7 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
               }
               onClose();
             }}
-            className="text-white/80 hover:text-white hover:bg-white/10"
+            className="text-text-secondary dark:text-white/80 hover:text-text-primary dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10"
           >
             <Icon name="close" size={18} />
           </IconButton>
@@ -118,9 +128,9 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
 
       {/* 2. Master aggregate progress bar */}
       {!allCompleted && (
-        <div className="w-full h-1 bg-white/10 overflow-hidden">
+        <div className="w-full h-1 bg-divider/30 dark:bg-white/10 overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-[#1A73E8] to-[#8AB4F8] transition-all duration-300 ease-out"
+            className="h-full bg-gradient-to-r from-accent to-sky-400 transition-all duration-300 ease-out"
             style={{ width: `${Math.max(4, overallPct)}%` }}
           />
         </div>
@@ -165,7 +175,7 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
                           <Icon name="check" size={12} /> {formatBytes(item.size)} • Complete
                         </span>
                       ) : isProcessing ? (
-                        <span className="text-[#1A73E8] dark:text-[#8AB4F8] flex items-center gap-1 font-medium">
+                        <span className="text-accent dark:text-[#8AB4F8] flex items-center gap-1 font-medium">
                           <Icon name="lock" size={11} className="animate-spin" />
                           {item.subStatus === 'hashing'
                             ? 'Verifying integrity...'
@@ -236,9 +246,9 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
           {/* 4. Footer action when all completed */}
           {allCompleted && (
             <div className="px-4 py-2.5 bg-card/60 border-t border-divider/20 flex items-center justify-between text-xs text-text-secondary">
-              <span className="flex items-center gap-1.5">
-                <Icon name="shield" size={13} className="text-accent" />
-                Zero-knowledge encrypted
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                <Icon name="check_circle" size={14} />
+                All uploads complete
               </span>
               <button
                 type="button"
