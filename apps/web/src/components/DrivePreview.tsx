@@ -114,8 +114,8 @@ export const DrivePreview: React.FC<DrivePreviewProps> = ({
         onPrev();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose, onNext, onPrev]);
 
   // Download media file

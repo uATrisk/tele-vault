@@ -82,12 +82,16 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
   ];
 
   const handleClick = (e: React.MouseEvent) => {
-    const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 768);
-    if (isTouch && !isSelected && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
-      onOpen();
-    } else {
-      onSelect(e);
+    // If clicking checkbox, more menu, or an interactive child, let their handler execute
+    if ((e.target as HTMLElement).closest('button, input, [role="checkbox"]')) {
+      return;
     }
+    // If holding modifier keys, toggle selection
+    if (e.ctrlKey || e.metaKey || e.shiftKey) {
+      onSelect(e);
+      return;
+    }
+    onOpen();
   };
 
   return (
@@ -131,7 +135,7 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
           {/* File Type Icon */}
           <Icon name={meta.icon} size={18} className={`${meta.color} shrink-0`} />
 
-          {/* Truncated File Name */}
+          {/* File Name */}
           <span
             title={item.name}
             className={`text-[13px] font-medium truncate tracking-tight ${
@@ -164,7 +168,13 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
       </div>
 
       {/* 2. Main Preview Area - Google Drive Canvas */}
-      <div className="relative w-full aspect-[16/10] bg-white dark:bg-[#131314] rounded-xl overflow-hidden flex items-center justify-center border border-black/[0.04] dark:border-white/[0.04] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.02)]">
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          onOpen();
+        }}
+        className="relative w-full aspect-[16/10] bg-white dark:bg-[#131314] rounded-xl overflow-hidden flex items-center justify-center border border-black/[0.04] dark:border-white/[0.04] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.02)] cursor-pointer"
+      >
         {thumbUrl ? (
           <img
             src={thumbUrl}
