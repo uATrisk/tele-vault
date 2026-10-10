@@ -1,0 +1,80 @@
+# TeleVault Execution Log & Progress
+
+## Status Overview
+
+- **Current Phase:** Phase 1 (Scaffold and human instructions)
+- **Phase 0 Status:** Completed (All Section 6 platform facts verified, documented in `docs/DECISIONS.md`)
+- **Last Updated:** 2026-10-10
+
+---
+
+## Phase Checklist
+
+- [x] **Phase 0: Recon and decisions**
+  - [x] Verified Bot API 50 MB upload limit
+  - [x] Verified Bot API 20 MB download limit
+  - [x] Verified Bots cannot list channel history
+  - [x] Verified `getChat` returns `pinned_message` for channels
+  - [x] Verified `can_edit_messages` required for pinning in channels
+  - [x] Verified rate limits and 429 `retry_after`
+  - [x] Verified Cloudflare Workers Free limits (10ms CPU, streaming req/res)
+  - [x] Verified D1 Free limits (5 GB total, 500 MB DB)
+  - [x] Verified Cron triggers supported on Free
+  - [x] Verified Workers Static Assets same-origin support
+  - [x] Verified browser WebCrypto and Streams support
+  - [x] Verified `showSaveFilePicker` platform availability and fallback
+  - [x] Written `docs/DECISIONS.md`
+- [ ] **Phase 1: Scaffold and human instructions**
+  - [ ] Write `docs/HUMAN_SETUP.md` with step-by-step instructions for human checklist
+  - [ ] Setup npm workspaces monorepo structure
+  - [ ] Configure TypeScript, ESLint, Prettier
+  - [ ] Configure `test:all` skeleton
+  - [ ] Verify clean baseline build and lint
+- [ ] **Phase 2: Crypto package (`packages/crypto`)**
+  - [ ] Pure WebCrypto implementation (SubtleCrypto only)
+  - [ ] Key derivation (MK, KEK via PBKDF2 ≥ 600,000 iter, RK via HKDF)
+  - [ ] Vault header encryption and re-wrapping
+  - [ ] Subkey derivation (`manifest`, `thumb`, `snapshot`, `file/<fileId>`)
+  - [ ] Chunk encryption/decryption with chunk binding AAD
+  - [ ] Manifest and thumbnail encryption/decryption
+  - [ ] Snapshot container format packing and unpacking
+  - [ ] Layer A tests: roundtrips, tampered data, wrong keys, Unicode NFKC, property tests
+- [ ] **Phase 3: Mock Telegram and Worker (`tools/mock-telegram`, `apps/worker`)**
+  - [ ] Implement Mock Telegram HTTP server with fault injection (429, 500, disconnect)
+  - [ ] Implement D1 database schema and migrations
+  - [ ] Implement Worker endpoints with Hono
+  - [ ] Implement Telegram proxy client with rate limiting & backoff
+  - [ ] Implement Worker Doctor check endpoint
+  - [ ] Implement Cron trigger (snapshot and pending chunk GC)
+  - [ ] Implement `scripts/restore.ts` and `scripts/find-channel-id.ts`
+  - [ ] Document `docs/API.md`
+  - [ ] Layer B Worker tests against Mock Telegram and local D1
+- [ ] **Phase 4: Web app (`apps/web`)**
+  - [ ] Vite + React + Tailwind setup
+  - [ ] Setup wizard (Doctor check, passphrase strength, recovery key confirmation)
+  - [ ] Unlock screen & session state (IndexedDB key persistence option, auto-lock)
+  - [ ] Chunked upload engine (queue, concurrency, resume, SHA-256 dedupe, EXIF extract, thumbnail generation)
+  - [ ] Virtualized timeline grid with batched thumbnail fetching
+  - [ ] Lightbox viewer and video player
+  - [ ] Single download and streaming bulk ZIP download
+  - [ ] Multi-select, favorites, trash/restore/delete, search, filters
+  - [ ] Settings modal (re-wrap passphrase, rebuild thumbs, verify integrity, doctor)
+- [ ] **Phase 5: End-to-end and hardening**
+  - [ ] Playwright E2E suite (Chromium + WebKit + Mobile viewport)
+  - [ ] Large file upload/download streaming test (300 MB)
+  - [ ] Network failure and resume test
+  - [ ] "Telegram sees nothing" privacy assertion test
+  - [ ] Same-origin network assertion test
+  - [ ] Accessibility audit (axe-core)
+  - [ ] Visual capture and UI screenshot audit
+  - [ ] Security audit: gitleaks, npm audit, CSP headers
+- [ ] **⛔ HUMAN GATE A: credentials**
+  - [ ] Local tests green. Await owner configuration via `npm run setup`.
+- [ ] **Phase 6: Live smoke and deploy**
+  - [ ] Run `npm run doctor` against real Telegram bot & channel
+  - [ ] Run `npm run live-smoke` ephemeral vault test
+  - [ ] Deploy Cloudflare Worker & D1 migrations via `npm run deploy`
+  - [ ] Verify deployed URL and production security headers
+- [ ] **Phase 7: Docs and handover**
+  - [ ] Complete all docs (`ARCHITECTURE.md`, `CRYPTO.md`, `THREAT_MODEL.md`, `RECOVERY.md`, `LIMITS.md`, `DEPENDENCIES.md`, `TESTING_REPORT.md`, `MANUAL_TEST_CHECKLIST.md`, `README.md`)
+- [ ] **⛔ HUMAN GATE B: owner's manual test**
