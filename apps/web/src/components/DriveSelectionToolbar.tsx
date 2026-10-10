@@ -3,6 +3,7 @@ import { Icon } from './ui/Icon';
 import { IconButton } from './ui/IconButton';
 import { Tooltip } from './ui/Tooltip';
 import { Menu, MenuItemProps } from './ui/Menu';
+import NumberFlow from '@number-flow/react';
 
 interface DriveSelectionToolbarProps {
   selectedCount: number;
@@ -58,8 +59,8 @@ export const DriveSelectionToolbar: React.FC<DriveSelectionToolbarProps> = ({
             <Icon name="close" size={20} />
           </button>
         </Tooltip>
-        <span className="text-sm font-medium tracking-tight">
-          {selectedCount} selected
+        <span className="text-sm font-medium tracking-tight flex items-center gap-1">
+          <NumberFlow value={selectedCount} /> selected
         </span>
       </div>
 

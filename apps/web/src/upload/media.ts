@@ -1,3 +1,5 @@
+import { rgbaToThumbHash } from 'thumbhash';
+
 // Client-side media metadata extraction and thumbnail generation
 
 export interface MediaMeta {
@@ -6,11 +8,12 @@ export interface MediaMeta {
   durationMs: number | null;
   takenAt: string | null;
   thumbnailBytes: Uint8Array;
+  thumbHash?: string | null;
 }
 
 /**
- * Extracts metadata and generates a thumbnail (<= 16 KB WebP or JPEG, ~320px long edge).
- * Strips EXIF from thumbnail.
+ * Extracts metadata and generates a thumbnail (<= 16 KB WebP or JPEG, ~320px long edge)
+ * plus a 25-byte ThumbHash blur placeholder stored in the encrypted manifest.
  */
 export async function processMediaFile(file: File): Promise<MediaMeta> {
   const isImage = file.type.startsWith('image/');
@@ -21,15 +24,17 @@ export async function processMediaFile(file: File): Promise<MediaMeta> {
   let durationMs: number | null = null;
   const takenAt: string = new Date(file.lastModified).toISOString();
   let thumbnailBytes: Uint8Array = new Uint8Array(0);
+  let thumbHash: string | null = null;
 
   if (isImage) {
     try {
       const img = await createImageElement(file);
       width = img.naturalWidth || img.width;
       height = img.naturalHeight || img.height;
-      thumbnailBytes = await renderThumbnailCanvas(img, width, height);
+      const res = await renderThumbnailCanvas(img, width, height);
+      thumbnailBytes = res.thumbnailBytes;
+      thumbHash = res.thumbHash;
     } catch {
-      // Fallback: generate a simple placeholder thumbnail
       thumbnailBytes = generatePlaceholderThumb(file.name);
     }
   } else if (isVideo) {
@@ -39,11 +44,11 @@ export async function processMediaFile(file: File): Promise<MediaMeta> {
       height = videoResult.height;
       durationMs = videoResult.durationMs;
       thumbnailBytes = videoResult.thumbnailBytes;
+      thumbHash = videoResult.thumbHash;
     } catch {
       thumbnailBytes = generatePlaceholderThumb(file.name);
     }
   } else {
-    // Non-media file
     thumbnailBytes = generatePlaceholderThumb(file.name);
   }
 
@@ -52,7 +57,8 @@ export async function processMediaFile(file: File): Promise<MediaMeta> {
     height,
     durationMs,
     takenAt,
-    thumbnailBytes
+    thumbnailBytes,
+    thumbHash
   };
 }
 
@@ -77,6 +83,7 @@ function processVideoFrame(file: File): Promise<{
   height: number;
   durationMs: number;
   thumbnailBytes: Uint8Array;
+  thumbHash: string | null;
 }> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
@@ -94,9 +101,15 @@ function processVideoFrame(file: File): Promise<{
 
       video.onseeked = async () => {
         try {
-          const thumbnailBytes = await renderThumbnailCanvas(video, width, height);
+          const res = await renderThumbnailCanvas(video, width, height);
           URL.revokeObjectURL(url);
-          resolve({ width, height, durationMs, thumbnailBytes });
+          resolve({
+            width,
+            height,
+            durationMs,
+            thumbnailBytes: res.thumbnailBytes,
+            thumbHash: res.thumbHash
+          });
         } catch (err) {
           URL.revokeObjectURL(url);
           reject(err);
@@ -117,7 +130,7 @@ async function renderThumbnailCanvas(
   source: HTMLImageElement | HTMLVideoElement,
   srcW: number,
   srcH: number
-): Promise<Uint8Array> {
+): Promise<{ thumbnailBytes: Uint8Array; thumbHash: string | null }> {
   const maxDim = 320;
   let targetW = srcW || maxDim;
   let targetH = srcH || maxDim;
@@ -142,13 +155,22 @@ async function renderThumbnailCanvas(
 
   ctx.drawImage(source, 0, 0, targetW, targetH);
 
+  let thumbHash: string | null = null;
+  try {
+    const imgData = ctx.getImageData(0, 0, targetW, targetH);
+    const rawHash = rgbaToThumbHash(targetW, targetH, imgData.data);
+    thumbHash = btoa(String.fromCharCode(...rawHash));
+  } catch {
+    thumbHash = null;
+  }
+
   return new Promise((resolve, reject) => {
     // Try WebP first with quality 0.75 for tight <= 16 KB budget
     canvas.toBlob(
       async (blob) => {
         if (!blob) return reject(new Error('Canvas toBlob failed'));
         const buf = await blob.arrayBuffer();
-        resolve(new Uint8Array(buf));
+        resolve({ thumbnailBytes: new Uint8Array(buf), thumbHash });
       },
       'image/webp',
       0.75

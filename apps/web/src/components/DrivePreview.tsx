@@ -6,6 +6,8 @@ import { Tooltip } from './ui/Tooltip';
 import { getFileTypeMeta } from '../utils/fileType';
 import { formatBytes } from '../utils/folderTree';
 import { api } from '../api';
+import { motion } from 'motion/react';
+import { useDrag, usePinch } from '@use-gesture/react';
 
 interface DrivePreviewProps {
   item: ItemManifest;
@@ -166,11 +168,36 @@ export const DrivePreview: React.FC<DrivePreviewProps> = ({
     }
   }, [item, masterKey, mediaUrl]);
 
+  // Drag down to dismiss, swipe left/right for next/prev
+  const bind = useDrag(({ down, movement: [mx, my], velocity: [vx, vy], direction: [dx, dy] }) => {
+    if (zoom > 1) {
+      setPan({ x: mx, y: my });
+      return;
+    }
+
+    if (!down && my > 100 && (vy > 0.4 || my > 180)) {
+      onClose();
+      return;
+    }
+
+    if (!down && Math.abs(mx) > 80 && (vx > 0.4 || Math.abs(mx) > 150)) {
+      if (dx < 0 && currentIndex < allItems.length - 1) {
+        onNext();
+      } else if (dx > 0 && currentIndex > 0) {
+        onPrev();
+      }
+    }
+  });
+
   return (
-    <div
+    <motion.div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex flex-col bg-black/90 text-white select-none animate-in fade-in duration-150"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+      className="fixed inset-0 z-50 flex flex-col bg-black/90 text-white select-none"
     >
       {/* Top Bar */}
       <div className="flex items-center justify-between h-16 px-4 bg-black/40 backdrop-blur-md border-b border-white/10 shrink-0">
@@ -259,8 +286,11 @@ export const DrivePreview: React.FC<DrivePreviewProps> = ({
         </div>
       </div>
 
-      {/* Main Preview Area */}
-      <div className="relative flex-1 flex items-center justify-center overflow-hidden p-4">
+      {/* Main Preview Area with Touch/Mouse Gestures */}
+      <div
+        {...(bind() as any)}
+        className="relative flex-1 flex items-center justify-center overflow-hidden p-4 touch-none"
+      >
         {/* Left Arrow */}
         {currentIndex > 0 && (
           <button
@@ -287,9 +317,31 @@ export const DrivePreview: React.FC<DrivePreviewProps> = ({
 
         {/* Content */}
         {isLoading ? (
-          <div className="flex flex-col items-center gap-3 text-white/80">
-            <Icon name="refresh" size={36} className="animate-spin text-accent" />
-            <p className="text-xs font-mono">{loadProgress}</p>
+          <div className="flex flex-col items-center gap-4 text-white/80">
+            <div className="relative w-12 h-12 flex items-center justify-center">
+              <svg className="w-12 h-12 -rotate-90 animate-spin" viewBox="0 0 48 48">
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.15)"
+                  strokeWidth="4"
+                />
+                <circle
+                  cx="24"
+                  cy="24"
+                  r="20"
+                  fill="none"
+                  stroke="var(--accent)"
+                  strokeWidth="4"
+                  strokeDasharray="125.6"
+                  strokeDashoffset="40"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            <p className="text-xs font-mono tracking-tight">{loadProgress}</p>
           </div>
         ) : meta.previewable && mediaUrl ? (
           meta.category === 'video' ? (
@@ -388,6 +440,6 @@ export const DrivePreview: React.FC<DrivePreviewProps> = ({
 
         <div className="w-16" />
       </div>
-    </div>
+    </motion.div>
   );
 };

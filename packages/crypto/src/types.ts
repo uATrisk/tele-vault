@@ -45,6 +45,7 @@ export interface ItemManifest {
   starred?: boolean;
   trashed: boolean;
   albumIds: string[];
+  thumbHash?: string | null;
 }
 
 export interface SnapshotHeadPart {

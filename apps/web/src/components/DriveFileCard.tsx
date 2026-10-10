@@ -5,7 +5,9 @@ import { Checkbox } from './ui/Checkbox';
 import { Menu, MenuItemProps } from './ui/Menu';
 import { getFileTypeMeta } from '../utils/fileType';
 import { api } from '../api';
-import { decryptThumbnail, hexToBytes } from '@televault/crypto';
+import { hexToBytes } from '@televault/crypto';
+import { thumbnailQueue } from '../utils/thumbnailQueue';
+import { truncateMiddle } from '../lib/utils';
 
 interface DriveFileCardProps {
   item: ItemManifest;
@@ -45,31 +47,23 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
   const menuBtnRef = useRef<HTMLButtonElement>(null);
   const meta = getFileTypeMeta(item.mime, item.kind, item.name);
 
-  // Decrypt thumbnail if available
+  const blurPlaceholder = React.useMemo(() => {
+    return meta.previewable ? thumbnailQueue.getBlurPlaceholder(item.id, item.thumbHash) : null;
+  }, [item.id, item.thumbHash, meta.previewable]);
+
+  // Decrypt thumbnail if available via prioritized background queue
   useEffect(() => {
-    let active = true;
-    let createdUrl: string | null = null;
-
-    async function loadThumb() {
-      if (!thumbKey || !meta.previewable) return;
-      try {
+    if (!thumbKey || !meta.previewable) return;
+    const cancel = thumbnailQueue.request(
+      item.id,
+      async () => {
         const thumbs = await api.getThumbs([item.id]);
-        if (!thumbs[item.id] || !active) return;
-
-        const cipherBytes = hexToBytes(thumbs[item.id]);
-        const plainBytes = await decryptThumbnail(thumbKey, hexToBytes(item.id), cipherBytes);
-        const blob = new Blob([plainBytes as BlobPart], { type: 'image/webp' });
-        createdUrl = URL.createObjectURL(blob);
-        if (active) setThumbUrl(createdUrl);
-      } catch {}
-    }
-
-    loadThumb();
-
-    return () => {
-      active = false;
-      if (createdUrl) URL.revokeObjectURL(createdUrl);
-    };
+        return thumbs[item.id] ? hexToBytes(thumbs[item.id]) : null;
+      },
+      thumbKey,
+      (url) => setThumbUrl(url)
+    );
+    return cancel;
   }, [item.id, thumbKey, meta.previewable]);
 
   const isTrashed = !!(item.trashed || isTrashView);
@@ -177,7 +171,15 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
             src={thumbUrl}
             alt={item.name}
             loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+          />
+        ) : blurPlaceholder ? (
+          <img
+            src={blurPlaceholder}
+            alt={item.name}
+            aria-hidden="true"
+            className="w-full h-full object-cover filter blur-[2px] scale-105 opacity-80"
           />
         ) : meta.previewable ? (
           <div className="flex flex-col items-center justify-center p-3 w-full h-full bg-surface/50 animate-pulse">
@@ -218,7 +220,7 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
               isSelected ? 'text-[#001D35] dark:text-[#C2E7FF]' : 'text-text-primary'
             }`}
           >
-            {item.name}
+            {truncateMiddle(item.name, 28)}
           </span>
 
           {(item.starred || item.favorite) && (

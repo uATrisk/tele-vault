@@ -1,53 +1,53 @@
-import React, { useState } from 'react';
+import React from 'react';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { cn } from '../../lib/utils';
 
-interface TooltipProps {
+export interface TooltipProps {
   text: string;
+  shortcut?: string;
   children: React.ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
-  align?: 'center' | 'left' | 'right';
+  align?: 'start' | 'center' | 'end' | 'left' | 'right';
+  delayDuration?: number;
 }
+
+export const TooltipProvider = TooltipPrimitive.Provider;
 
 export const Tooltip: React.FC<TooltipProps> = ({
   text,
+  shortcut,
   children,
   position = 'bottom',
-  align = 'center'
+  align = 'center',
+  delayDuration = 250
 }) => {
-  const [isVisible, setIsVisible] = useState(false);
+  if (!text) return <>{children}</>;
 
-  const getPosStyle = () => {
-    if (position === 'bottom') {
-      if (align === 'right') return 'top-full right-0 mt-1.5';
-      if (align === 'left') return 'top-full left-0 mt-1.5';
-      return 'top-full left-1/2 -translate-x-1/2 mt-1.5';
-    }
-    if (position === 'top') {
-      if (align === 'right') return 'bottom-full right-0 mb-1.5';
-      if (align === 'left') return 'bottom-full left-0 mb-1.5';
-      return 'bottom-full left-1/2 -translate-x-1/2 mb-1.5';
-    }
-    if (position === 'left') return 'right-full top-1/2 -translate-y-1/2 mr-1.5';
-    if (position === 'right') return 'left-full top-1/2 -translate-y-1/2 ml-1.5';
-    return 'top-full left-1/2 -translate-x-1/2 mt-1.5';
-  };
+  const mappedAlign =
+    align === 'left' ? 'start' : align === 'right' ? 'end' : align;
 
   return (
-    <div
-      className="relative inline-flex"
-      onMouseEnter={() => setIsVisible(true)}
-      onMouseLeave={() => setIsVisible(false)}
-      onFocus={() => setIsVisible(true)}
-      onBlur={() => setIsVisible(false)}
-    >
-      {children}
-      {isVisible && text && (
-        <div
-          role="tooltip"
-          className={`absolute z-50 px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded shadow-md whitespace-nowrap pointer-events-none select-none transition-opacity duration-150 max-w-[220px] truncate ${getPosStyle()}`}
-        >
-          {text}
-        </div>
-      )}
-    </div>
+    <TooltipPrimitive.Provider delayDuration={delayDuration}>
+      <TooltipPrimitive.Root>
+        <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+        <TooltipPrimitive.Portal>
+          <TooltipPrimitive.Content
+            side={position}
+            align={mappedAlign as 'start' | 'center' | 'end'}
+            sideOffset={6}
+            className={cn(
+              'z-50 px-2.5 py-1 text-xs font-medium text-white bg-[#1F1F1F]/95 dark:bg-[#303030]/95 backdrop-blur-xs rounded-md shadow-md select-none pointer-events-none animate-in fade-in zoom-in-95 duration-100 flex items-center gap-1.5 max-w-[260px]'
+            )}
+          >
+            <span className="truncate">{text}</span>
+            {shortcut && (
+              <kbd className="px-1 py-0.2 text-[10px] font-mono tracking-tight bg-white/15 dark:bg-white/20 rounded text-white/90">
+                {shortcut}
+              </kbd>
+            )}
+          </TooltipPrimitive.Content>
+        </TooltipPrimitive.Portal>
+      </TooltipPrimitive.Root>
+    </TooltipPrimitive.Provider>
   );
 };

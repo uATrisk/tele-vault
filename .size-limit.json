@@ -1,0 +1,7 @@
+[
+  {
+    "path": "apps/web/dist/assets/index-*.js",
+    "limit": "200 kB",
+    "gzip": true
+  }
+]

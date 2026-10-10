@@ -3,6 +3,7 @@ import { Icon, IconName } from './ui/Icon';
 import { Menu, MenuItemProps } from './ui/Menu';
 import { formatBytes } from '../utils/folderTree';
 import { BrandLogo } from './ui/BrandLogo';
+import { motion } from 'motion/react';
 
 export type NavRoute = 'drive' | 'photos' | 'recent' | 'starred' | 'trash';
 
@@ -112,18 +113,27 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
                   onRouteChange(item.route);
                   onCloseMobile?.();
                 }}
-                className={`flex items-center gap-4 w-full h-10 px-4 rounded-full text-sm font-medium transition-all duration-150 ${
+                className={`relative flex items-center w-full h-10 px-4 rounded-full text-sm font-medium transition-colors duration-150 ${
                   isActive
-                    ? 'bg-[#C2E7FF] dark:bg-[#004A77] text-[#001D35] dark:text-[#C2E7FF] font-semibold'
+                    ? 'text-[#001D35] dark:text-[#C2E7FF] font-semibold'
                     : 'text-text-secondary hover:text-text-primary hover:bg-[#1F1F1F]/[0.06] dark:hover:bg-[#E3E3E3]/[0.08]'
                 }`}
               >
-                <Icon
-                  name={item.icon}
-                  size={20}
-                  className={isActive ? 'text-[#001D35] dark:text-[#C2E7FF] shrink-0' : 'text-text-secondary shrink-0'}
-                />
-                <span className="truncate inline md:hidden lg:inline">{item.label}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavPill"
+                    transition={{ type: 'spring', stiffness: 500, damping: 36 }}
+                    className="absolute inset-0 rounded-full bg-[#C2E7FF] dark:bg-[#004A77]"
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-4 w-full">
+                  <Icon
+                    name={item.icon}
+                    size={20}
+                    className={isActive ? 'text-[#001D35] dark:text-[#C2E7FF] shrink-0' : 'text-text-secondary shrink-0'}
+                  />
+                  <span className="truncate inline md:hidden lg:inline">{item.label}</span>
+                </span>
               </button>
             );
           })}
@@ -235,15 +245,18 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
                 isActive ? 'text-accent' : 'text-text-secondary hover:text-text-primary'
               }`}
             >
-              <div
-                className={`flex items-center justify-center w-12 h-7 rounded-full transition-colors ${
-                  isActive ? 'bg-[#C2E7FF] dark:bg-[#004A77]' : 'bg-transparent'
-                }`}
-              >
+              <div className="relative flex items-center justify-center w-12 h-7 rounded-full">
+                {isActive && (
+                  <motion.div
+                    layoutId="activeBottomNavPill"
+                    transition={{ type: 'spring', stiffness: 500, damping: 36 }}
+                    className="absolute inset-0 rounded-full bg-[#C2E7FF] dark:bg-[#004A77]"
+                  />
+                )}
                 <Icon
                   name={item.icon}
                   size={20}
-                  className={isActive ? 'text-[#001D35] dark:text-[#C2E7FF]' : 'text-text-secondary'}
+                  className={`relative z-10 ${isActive ? 'text-[#001D35] dark:text-[#C2E7FF]' : 'text-text-secondary'}`}
                 />
               </div>
               <span className={`text-[11px] mt-0.5 tracking-tight ${isActive ? 'font-semibold text-text-primary' : 'font-normal'}`}>

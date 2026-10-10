@@ -19,7 +19,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:secrets": "node scripts/secret-scan.mjs",
-    "test:all": "npm run typecheck && npm run test && npm run test:secrets",
+    "size": "size-limit",
+    "test:all": "npm run typecheck && npm run test && npm run test:secrets && npm run build && npm run size",
     "setup": "npx tsx scripts/setup.ts",
     "doctor": "npx tsx scripts/doctor.ts",
     "find-channel-id": "npx tsx scripts/find-channel-id.ts",
@@ -30,9 +31,11 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.49.0",
+    "@size-limit/preset-app": "^14.2.0",
     "@types/node": "^22.10.1",
     "concurrently": "^9.1.0",
     "prettier": "^3.4.2",
+    "size-limit": "^14.2.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"

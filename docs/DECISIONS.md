@@ -56,6 +56,16 @@ This document records platform verification results, architectural choices, alte
 - **Alternatives Considered:** `react-window`, custom virtual scroller.
 - **Reason:** Headless, highly performant, handles 50,000+ items smoothly with dynamic item sizes.
 
+### Decision 7: Polish Component Architecture & Motion System
+- **Choice:** Radix UI primitives + Motion (`LazyMotion` with `domAnimation`) + Sonner + Vaul + cmdk + NumberFlow + ThumbHash.
+- **Alternatives Considered:** Heavy UI frameworks (MUI, Ant Design), CSS-only transitions, raw HTML inputs.
+- **Reason:**
+  1. Radix UI primitives provide headless, accessible, keyboard-operable, and screen-reader compliant foundations without injecting opinions, colors, or external fonts.
+  2. `motion` with `LazyMotion` keeps bundle footprint small while providing 60fps springs, layout animations, and gesture support.
+  3. `ThumbHash` stores tiny 25-byte blur placeholders inside the encrypted client-side manifest, preserving zero-knowledge security while giving instant progressive image loading before ciphertext decryption finishes.
+  4. 100% bundled locally with zero runtime network calls, preserving strict same-origin CSP guarantees.
+
+
 ---
 
 ## 3. UI v2 Redesign Decisions (Google Drive Architecture)

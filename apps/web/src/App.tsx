@@ -13,7 +13,6 @@ import { api } from './api';
 import { idb } from './db';
 import { uploadManager, UploadQueueItem } from './upload/uploader';
 import { uploadFilesWithStructure, scanDataTransferItems } from './upload/folderUpload';
-import { exportItemsAsZip } from './utils/zipExport';
 import {
   getBreadcrumbs,
   getFolderContents,
@@ -22,17 +21,19 @@ import {
 } from './utils/folderTree';
 import { getFileTypeMeta } from './utils/fileType';
 
-import { LoginScreen } from './components/LoginScreen';
-import { SetupWizard } from './components/SetupWizard';
+const LoginScreen = React.lazy(() =>
+  import('./components/LoginScreen').then((m) => ({ default: m.LoginScreen }))
+);
+const SetupWizard = React.lazy(() =>
+  import('./components/SetupWizard').then((m) => ({ default: m.SetupWizard }))
+);
 import { UnlockScreen } from './components/UnlockScreen';
 import { DriveHeader } from './components/DriveHeader';
 import { DriveSidebar, NavRoute } from './components/DriveSidebar';
 import { DriveMainView } from './components/DriveMainView';
 import { TimelineGrid } from './components/TimelineGrid';
 import { DriveDetailsPanel } from './components/DriveDetailsPanel';
-import { DrivePreview } from './components/DrivePreview';
 import { DriveUploadCard } from './components/DriveUploadCard';
-import { SettingsModal } from './components/SettingsModal';
 import {
   RenameDialog,
   NewFolderDialog,
@@ -40,10 +41,27 @@ import {
   ConfirmDeleteDialog
 } from './components/DriveDialogs';
 import { ShortcutsDialog } from './components/ShortcutsDialog';
-import { Showcase } from './components/ui/Showcase';
-import { Snackbar } from './components/ui/Snackbar';
 import { FilterCategory, FilterModified } from './components/DriveFilterChips';
 import { Icon } from './components/ui/Icon';
+import { Toaster, toast } from './components/ui/Toaster';
+
+const DrivePreview = React.lazy(() =>
+  import('./components/DrivePreview').then((m) => ({ default: m.DrivePreview }))
+);
+const SettingsModal = React.lazy(() =>
+  import('./components/SettingsModal').then((m) => ({ default: m.SettingsModal }))
+);
+const CommandPaletteModal = React.lazy(() =>
+  import('./components/CommandPaletteModal').then((m) => ({ default: m.CommandPaletteModal }))
+);
+const DesignShowcase = React.lazy(() =>
+  (import.meta as any).env?.DEV
+    ? import('./components/ui/DesignShowcase').then((m) => ({ default: m.DesignShowcase }))
+    : Promise.resolve({ default: () => null })
+);
+const Showcase = React.lazy(() =>
+  import('./components/ui/Showcase').then((m) => ({ default: m.Showcase }))
+);
 
 type AppState = 'loading' | 'login' | 'setup' | 'unlock' | 'unlocked';
 
@@ -73,6 +91,8 @@ export const App: React.FC = () => {
   const [previewItem, setPreviewItem] = useState<ItemManifest | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isShowcaseOpen, setIsShowcaseOpen] = useState(false);
+  const [isDesignShowcase, setIsDesignShowcase] = useState(false);
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -117,15 +137,18 @@ export const App: React.FC = () => {
   });
   const lastActivityRef = useRef<number>(Date.now());
 
+  const isDark =
+    theme === 'dark' ||
+    (theme === 'system' &&
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   // 1. Theme handler
   useEffect(() => {
     localStorage.setItem('tv_theme', theme);
-    const isDark =
-      theme === 'dark' ||
-      (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.classList.toggle('dark', isDark);
     document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+  }, [theme, isDark]);
 
   // 2. Hash Routing synchronization
   const parseHash = useCallback(() => {
@@ -151,7 +174,10 @@ export const App: React.FC = () => {
       setCurrentRoute('drive');
     } else if (hash === '#/showcase') {
       setIsShowcaseOpen(true);
+    } else if (hash === '#/_design') {
+      setIsDesignShowcase(true);
     } else {
+      setIsDesignShowcase(false);
       setCurrentRoute('drive');
       setCurrentFolderId(null);
     }
@@ -328,6 +354,12 @@ export const App: React.FC = () => {
   // 7. Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandOpen((prev) => !prev);
+        return;
+      }
+
       if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
         return;
       }
@@ -674,7 +706,21 @@ export const App: React.FC = () => {
       }
     }
 
-    const itemsToUpdate = items.filter((i) => idsToTrash.has(i.id) && !i.trashed);
+    const previousItems = items;
+    // Optimistic UI update: mark as trashed immediately
+    setItems((prev) => prev.map((i) => (idsToTrash.has(i.id) ? { ...i, trashed: true } : i)));
+    setSelectedIds(new Set());
+
+    const count = targets.length;
+    const label = count === 1 ? `"${targets[0].name}" moved to trash` : `${count} items moved to trash`;
+    toast(label, {
+      action: {
+        label: 'Undo',
+        onClick: () => handleRestoreItems(targets)
+      }
+    });
+
+    const itemsToUpdate = previousItems.filter((i) => idsToTrash.has(i.id) && !i.trashed);
 
     try {
       for (const item of itemsToUpdate) {
@@ -691,19 +737,17 @@ export const App: React.FC = () => {
 
         const res = await api.updateItem(item.id, bytesToHex(cipher), currentRev);
         setItemRevs((prev) => ({ ...prev, [item.id]: res.rev }));
-        setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)));
       }
-
-      setSelectedIds(new Set());
-      setSnackbar({
-        message: `${targets.length} item(s) moved to trash`,
-        isOpen: true,
-        actionLabel: 'Undo',
-        onAction: () => handleRestoreItems(targets)
-      });
     } catch (err) {
       console.error('Trash items failed:', err);
-      alert('Failed to move items to trash');
+      // Revert optimistic update
+      setItems(previousItems);
+      toast.error('Failed to move items to trash', {
+        action: {
+          label: 'Retry',
+          onClick: () => handleTrashItems(targets)
+        }
+      });
     }
   };
 
@@ -719,7 +763,20 @@ export const App: React.FC = () => {
       }
     }
 
-    const itemsToUpdate = items.filter((i) => idsToRestore.has(i.id) && i.trashed);
+    const previousItems = items;
+    // Optimistic restore
+    setItems((prev) => prev.map((i) => (idsToRestore.has(i.id) ? { ...i, trashed: false } : i)));
+    setSelectedIds(new Set());
+
+    const count = targets.length;
+    toast(`Restored ${count} item${count === 1 ? '' : 's'}`, {
+      action: {
+        label: 'Show in Drive',
+        onClick: () => updateRoute('drive')
+      }
+    });
+
+    const itemsToUpdate = previousItems.filter((i) => idsToRestore.has(i.id) && i.trashed);
 
     try {
       for (const item of itemsToUpdate) {
@@ -736,16 +793,11 @@ export const App: React.FC = () => {
 
         const res = await api.updateItem(item.id, bytesToHex(cipher), currentRev);
         setItemRevs((prev) => ({ ...prev, [item.id]: res.rev }));
-        setItems((prev) => prev.map((i) => (i.id === item.id ? updated : i)));
       }
-
-      setSelectedIds(new Set());
-      setSnackbar({
-        message: `${targets.length} item(s) restored`,
-        isOpen: true
-      });
     } catch (err) {
       console.error('Restore items failed:', err);
+      setItems(previousItems);
+      toast.error('Failed to restore items');
     }
   };
 
@@ -805,6 +857,7 @@ export const App: React.FC = () => {
 
     try {
       setZipProgress(`Preparing export...`);
+      const { exportItemsAsZip } = await import('./utils/zipExport');
       const blob = await exportItemsAsZip({
         targets,
         allItems: items,
@@ -828,6 +881,24 @@ export const App: React.FC = () => {
       alert(`ZIP Download failed: ${err.message || 'Unknown error'}`);
     } finally {
       setZipProgress(null);
+    }
+  };
+
+  const handleDownloadItem = async (item: ItemManifest) => {
+    if (!masterKey) return;
+    try {
+      const { exportItemsAsZip } = await import('./utils/zipExport');
+      const blob = await exportItemsAsZip({ targets: [item], allItems: items, masterKey });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = item.name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Download failed');
     }
   };
 
@@ -860,7 +931,19 @@ export const App: React.FC = () => {
     }
   };
 
-  // 14. Render Views based on AppState
+  // 14. Render Dev Showcase if requested
+  if (isDesignShowcase) {
+    return (
+      <div className="relative">
+        <React.Suspense fallback={<div className="min-h-screen bg-page p-8 text-text-secondary">Loading showcase...</div>}>
+          <DesignShowcase />
+        </React.Suspense>
+        <Toaster />
+      </div>
+    );
+  }
+
+  // 15. Render Views based on AppState
   if (appState === 'loading') {
     return (
       <div className="min-h-screen bg-page flex flex-col items-center justify-center p-4">
@@ -878,16 +961,22 @@ export const App: React.FC = () => {
   }
 
   if (appState === 'login') {
-    return <LoginScreen onLoginSuccess={checkVaultStatus} />;
+    return (
+      <React.Suspense fallback={null}>
+        <LoginScreen onLoginSuccess={checkVaultStatus} />
+      </React.Suspense>
+    );
   }
 
   if (appState === 'setup') {
     return (
-      <SetupWizard
-        onSetupComplete={(newMasterKey, newHeader) => {
-          activateKeys(newMasterKey, newHeader);
-        }}
-      />
+      <React.Suspense fallback={null}>
+        <SetupWizard
+          onSetupComplete={(newMasterKey, newHeader) => {
+            activateKeys(newMasterKey, newHeader);
+          }}
+        />
+      </React.Suspense>
     );
   }
 
@@ -968,7 +1057,7 @@ export const App: React.FC = () => {
               onClearSelection={() => setSelectedIds(new Set())}
               onNavigateFolder={(fId) => updateRoute('drive', fId)}
               onOpenFile={(file) => setPreviewItem(file)}
-              onDownloadItem={(item) => exportItemsAsZip({ targets: [item], allItems: items, masterKey: masterKey! })}
+              onDownloadItem={handleDownloadItem}
               onBulkDownloadZip={handleBulkDownloadZip}
               onRenameItem={(item) => setRenameTarget(item)}
               onMoveItems={(targets) => setMoveTargets(targets)}
@@ -1016,35 +1105,37 @@ export const App: React.FC = () => {
 
       {/* 3. Full-Screen Preview Viewer */}
       {previewItem && masterKey && (
-        <DrivePreview
-          item={previewItem}
-          allItems={viewFiles}
-          masterKey={masterKey}
-          onClose={() => setPreviewItem(null)}
-          onNext={() => {
-            const idx = viewFiles.findIndex((i) => i.id === previewItem.id);
-            if (idx !== -1 && idx < viewFiles.length - 1) setPreviewItem(viewFiles[idx + 1]);
-          }}
-          onPrev={() => {
-            const idx = viewFiles.findIndex((i) => i.id === previewItem.id);
-            if (idx > 0) setPreviewItem(viewFiles[idx - 1]);
-          }}
-          isTrashView={currentRoute === 'trash'}
-          onRestore={(it) => {
-            handleRestoreItems([it]);
-            setPreviewItem(null);
-          }}
-          onDeleteForever={(it) => {
-            setConfirmDeleteTargets({ items: [it] });
-            setPreviewItem(null);
-          }}
-          onToggleStar={(it) => handleToggleStarItems([it])}
-          onTrash={(it) => {
-            handleTrashItems([it]);
-            setPreviewItem(null);
-          }}
-          onOpenDetails={() => setIsDetailsOpen(true)}
-        />
+        <React.Suspense fallback={null}>
+          <DrivePreview
+            item={previewItem}
+            allItems={viewFiles}
+            masterKey={masterKey}
+            onClose={() => setPreviewItem(null)}
+            onNext={() => {
+              const idx = viewFiles.findIndex((i) => i.id === previewItem.id);
+              if (idx !== -1 && idx < viewFiles.length - 1) setPreviewItem(viewFiles[idx + 1]);
+            }}
+            onPrev={() => {
+              const idx = viewFiles.findIndex((i) => i.id === previewItem.id);
+              if (idx > 0) setPreviewItem(viewFiles[idx - 1]);
+            }}
+            isTrashView={currentRoute === 'trash'}
+            onRestore={(it) => {
+              handleRestoreItems([it]);
+              setPreviewItem(null);
+            }}
+            onDeleteForever={(it) => {
+              setConfirmDeleteTargets({ items: [it] });
+              setPreviewItem(null);
+            }}
+            onToggleStar={(it) => handleToggleStarItems([it])}
+            onTrash={(it) => {
+              handleTrashItems([it]);
+              setPreviewItem(null);
+            }}
+            onOpenDetails={() => setIsDetailsOpen(true)}
+          />
+        </React.Suspense>
       )}
 
       {/* 4. Bottom-Right Upload Progress Card */}
@@ -1102,34 +1193,31 @@ export const App: React.FC = () => {
       />
 
       {isSettingsOpen && header && masterKey && (
-        <SettingsModal
-          header={header}
-          masterKey={masterKey}
-          onClose={() => setIsSettingsOpen(false)}
-          onLock={handleLock}
-          onLogout={handleLogout}
-          autoLockMinutes={autoLockMinutes}
-          onSetAutoLockMinutes={(mins) => {
-            setAutoLockMinutes(mins);
-            localStorage.setItem('tv_autolock', mins.toString());
-          }}
-          onVaultUpdated={(newHeader) => {
-            setHeader(newHeader);
-          }}
-        />
+        <React.Suspense fallback={null}>
+          <SettingsModal
+            header={header}
+            masterKey={masterKey}
+            onClose={() => setIsSettingsOpen(false)}
+            onLock={handleLock}
+            onLogout={handleLogout}
+            autoLockMinutes={autoLockMinutes}
+            onSetAutoLockMinutes={(mins) => {
+              setAutoLockMinutes(mins);
+              localStorage.setItem('tv_autolock', mins.toString());
+            }}
+            onVaultUpdated={(newHeader) => {
+              setHeader(newHeader);
+            }}
+          />
+        </React.Suspense>
       )}
 
       {/* 6. Design System Showcase */}
-      {isShowcaseOpen && <Showcase onClose={() => setIsShowcaseOpen(false)} />}
-
-      {/* 7. Bottom-Left Floating Snackbar */}
-      <Snackbar
-        message={snackbar.message}
-        isOpen={snackbar.isOpen}
-        onClose={() => setSnackbar((prev) => ({ ...prev, isOpen: false }))}
-        actionLabel={snackbar.actionLabel}
-        onAction={snackbar.onAction}
-      />
+      {isShowcaseOpen && (
+        <React.Suspense fallback={null}>
+          <Showcase onClose={() => setIsShowcaseOpen(false)} />
+        </React.Suspense>
+      )}
 
       {/* 8. Off-Screen File Inputs (Must NOT be display:none for iOS Safari & Mobile WebKit support) */}
       <input
@@ -1186,6 +1274,49 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
+      {/* 10. Command Palette (Cmd+K / Ctrl+K) */}
+      {isCommandOpen && (
+        <React.Suspense fallback={null}>
+          <CommandPaletteModal
+            isOpen={isCommandOpen}
+            onClose={() => setIsCommandOpen(false)}
+            items={items}
+            onNewFolder={() => {
+              setIsCommandOpen(false);
+              setIsNewFolderOpen(true);
+            }}
+            onUploadFiles={() => {
+              setIsCommandOpen(false);
+              fileInputRef.current?.click();
+            }}
+            onUploadFolder={() => {
+              setIsCommandOpen(false);
+              folderInputRef.current?.click();
+            }}
+            onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            onOpenSettings={() => {
+              setIsCommandOpen(false);
+              setIsSettingsOpen(true);
+            }}
+            onLockVault={() => {
+              setIsCommandOpen(false);
+              handleLock();
+            }}
+            onNavigateRoute={(route) => updateRoute(route)}
+            onSelectItem={(item) => {
+              if (item.kind === 'folder') {
+                updateRoute('drive', item.id);
+              } else {
+                setPreviewItem(item);
+              }
+            }}
+            isDark={isDark}
+          />
+        </React.Suspense>
+      )}
+
+      {/* 11. Sonner Toaster */}
+      <Toaster />
     </div>
   );
 };

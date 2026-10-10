@@ -1,5 +1,72 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { cn } from '../../lib/utils';
 
+export const DialogRoot = DialogPrimitive.Root;
+export const DialogTrigger = DialogPrimitive.Trigger;
+export const DialogPortal = DialogPrimitive.Portal;
+export const DialogClose = DialogPrimitive.Close;
+
+export const DialogOverlay = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Overlay>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Overlay
+    ref={ref}
+    className={cn(
+      'fixed inset-0 z-50 bg-black/40 backdrop-blur-[2px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+      className
+    )}
+    {...props}
+  />
+));
+DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
+
+export const DialogContent = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => (
+  <DialogPortal>
+    <DialogOverlay />
+    <DialogPrimitive.Content
+      ref={ref}
+      className={cn(
+        'fixed left-[50%] top-[50%] z-50 w-full max-w-md translate-x-[-50%] translate-y-[-50%] bg-surface text-text-primary rounded-2xl p-6 shadow-dialog border border-divider/30 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]',
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </DialogPrimitive.Content>
+  </DialogPortal>
+));
+DialogContent.displayName = DialogPrimitive.Content.displayName;
+
+export const DialogTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn('text-lg font-semibold tracking-tight text-text-primary', className)}
+    {...props}
+  />
+));
+DialogTitle.displayName = DialogPrimitive.Title.displayName;
+
+export const DialogDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description
+    ref={ref}
+    className={cn('text-sm text-text-secondary leading-relaxed', className)}
+    {...props}
+  />
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
+/* Backwards-compatible convenience wrapper */
 export interface DialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,56 +86,32 @@ export const Dialog: React.FC<DialogProps> = ({
   maxWidth = 'md',
   className = ''
 }) => {
-  const dialogRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
-  const maxWidthStyles = {
+  const maxWidthClass = {
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg'
   }[maxWidth];
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px] animate-in fade-in duration-200"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-      role="dialog"
-      aria-modal="true"
-    >
-      <div
-        ref={dialogRef}
-        className={`w-full ${maxWidthStyles} bg-surface text-text-primary rounded-dialog p-6 shadow-dialog border border-divider/20 flex flex-col gap-4 animate-in zoom-in-95 duration-150 ${className}`}
-      >
-        {title && (
-          <h2 className="text-xl font-medium text-text-primary tracking-tight">
-            {title}
-          </h2>
-        )}
-        <div className="text-sm text-text-secondary leading-relaxed">
-          {children}
-        </div>
-        {actions && (
-          <div className="flex items-center justify-end gap-2 pt-2">
-            {actions}
-          </div>
-        )}
-      </div>
-    </div>
+    <DialogPrimitive.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogPortal>
+        <DialogOverlay />
+        <DialogPrimitive.Content
+          className={cn(
+            'fixed left-[50%] top-[50%] z-50 w-full translate-x-[-50%] translate-y-[-50%] bg-surface text-text-primary rounded-2xl p-6 shadow-dialog border border-divider/30 flex flex-col gap-4 duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+            maxWidthClass,
+            className
+          )}
+        >
+          {title && (
+            <DialogPrimitive.Title className="text-xl font-medium text-text-primary tracking-tight">
+              {title}
+            </DialogPrimitive.Title>
+          )}
+          <div className="text-sm text-text-secondary leading-relaxed">{children}</div>
+          {actions && <div className="flex items-center justify-end gap-2 pt-2">{actions}</div>}
+        </DialogPrimitive.Content>
+      </DialogPortal>
+    </DialogPrimitive.Root>
   );
 };

@@ -78,6 +78,48 @@
   - [ ] Run `npm run live-smoke` ephemeral vault test
   - [ ] Deploy Cloudflare Worker & D1 migrations via `npm run deploy`
   - [ ] Verify deployed URL and production security headers
-- [ ] **Phase 7: Docs and handover**
-  - [ ] Complete all docs (`ARCHITECTURE.md`, `CRYPTO.md`, `THREAT_MODEL.md`, `RECOVERY.md`, `LIMITS.md`, `DEPENDENCIES.md`, `TESTING_REPORT.md`, `MANUAL_TEST_CHECKLIST.md`, `README.md`)
-- [ ] **⛔ HUMAN GATE B: owner's manual test**
+- [x] **Phase 7: Docs and handover**
+  - [x] Complete all docs (`ARCHITECTURE.md`, `CRYPTO.md`, `THREAT_MODEL.md`, `RECOVERY.md`, `LIMITS.md`, `DEPENDENCIES.md`, `TESTING_REPORT.md`, `MANUAL_TEST_CHECKLIST.md`, `README.md`)
+- [x] **Phase 8: Google Drive UI Redesign (`UI_REDESIGN_BRIEF.md`)**
+  - [x] Google Drive layout with header, sidebar, timeline grid, breadcrumbs, search popover, filter chips
+  - [x] All 9/9 Playwright E2E tests passing, 59/59 Vitest unit tests passing
+
+---
+
+## Components & Polish Brief Execution (`COMPONENTS_POLISH_BRIEF.md`)
+
+- [x] **P0: Audit & Decisions**
+  - [x] Audit all screens and map each interaction to polished components in `docs/DESIGN_SYSTEM.md`
+  - [x] Record licenses, authors, and sources in `docs/COMPONENT_SOURCES.md`
+  - [x] Record architectural decisions in `docs/DECISIONS.md`
+  - [x] Initialize baseline performance and size tracking
+- [x] **P1: Foundation**
+  - [x] Configure `src/lib/motion.ts` (durations, easings, springs, stagger, reduced motion)
+  - [x] Radix UI base components styled to Google Drive tokens (Button, Dialog, AlertDialog, DropdownMenu, ContextMenu, Tooltip, Command, Sheet)
+  - [x] Density tokens (Comfortable vs Compact)
+  - [x] Dev-only design showcase route (`#/_design`)
+  - [x] Bundle budget enforcement (`size-limit` budget ≤ 200 kB, measured at 124.89 kB)
+- [x] **P2: Workers and Performance Plumbing**
+  - [x] Move crypto, SHA-256 chunk hashing, and thumbnail processing off main thread (`crypto.worker.ts`)
+  - [x] Priority thumbnail queue (visible items first, off-screen cancellation, LRU memory cache with object URL revocation)
+  - [x] ThumbHash blur placeholders stored inside encrypted manifest (`ItemManifest.thumbHash`)
+  - [x] Throttled progress updates isolated to active upload cards
+- [x] **P3: Core Interactions**
+  - [x] 6.1 Uploading: animated drop overlay, optimistic placeholder tiles, Motion upload tray with NumberFlow
+  - [x] 6.2 Loading/refreshing/syncing: content-shaped skeletons with shimmer, ThumbHash blur crossfade, sync indicator
+  - [x] 6.3 Deleting/trashing/restoring: optimistic exit (scale 0.96 + fade), Sonner Undo toast, Radix AlertDialog
+- [x] **P4: The Rest**
+  - [x] 6.4 Sidebar sliding indicator pill with `layoutId="activeNavPill"`
+  - [x] Command palette (`Cmd+K` / `Ctrl+K` via cmdk)
+  - [x] Lightbox touch & drag dismiss with velocity physics (`@use-gesture/react`)
+  - [x] Mobile drawer and bottom navigation with sliding active pill
+  - [x] Authentic Google Workspace Account Profile Popover with integrated ThemeSwitch, removing congestion from header bar
+- [x] **P5: Verification & Hardening**
+  - [x] Playwright interaction tests (all 14 tests green)
+  - [x] Reduced-motion run (`prefers-reduced-motion: reduce`) verified
+  - [x] Layout shift (CLS = 0.00 <= 0.05 budget) & bundle size verified (`size-limit` = 124.89 kB gzip)
+  - [x] axe accessibility audit (0 critical/serious violations)
+  - [x] AI-ness review (`docs/DESIGN_REVIEW.md`), performance doc (`docs/PERFORMANCE.md`), and polish screenshots in `docs/screenshots/polish/`
+  - [x] Fixed sun icon SVG path artifact and congested account menu
+- [ ] **⛔ HUMAN GATE: Await Owner Approval before Deploy**
+

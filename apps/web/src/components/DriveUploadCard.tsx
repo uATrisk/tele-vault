@@ -3,6 +3,9 @@ import { UploadQueueItem } from '../upload/uploader';
 import { Icon } from './ui/Icon';
 import { IconButton } from './ui/IconButton';
 import { getFileTypeMeta } from '../utils/fileType';
+import NumberFlow from '@number-flow/react';
+import { truncateMiddle } from '../lib/utils';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface DriveUploadCardProps {
   queue: UploadQueueItem[];
@@ -65,9 +68,14 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
     : `Uploading ${inProgress.length} item${inProgress.length === 1 ? '' : 's'}`;
 
   return (
-    <aside
+    <motion.aside
+      layout
+      initial={{ opacity: 0, y: 20, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.98 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
       aria-label="Upload progress"
-      className="fixed bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:bottom-6 z-50 sm:w-96 bg-surface dark:bg-[#1E1F20] text-text-primary rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.18)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.5)] border border-divider/60 select-none overflow-hidden transition-all duration-300 animate-in slide-in-from-bottom-4"
+      className="fixed bottom-20 left-3 right-3 sm:left-auto sm:right-6 sm:bottom-6 z-50 sm:w-96 bg-surface dark:bg-[#1E1F20] text-text-primary rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.18)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.5)] border border-divider/60 select-none overflow-hidden"
     >
       {/* 1. Header (Google Drive Material 3 style) */}
       <div
@@ -89,8 +97,8 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
           <div className="flex flex-col min-w-0 overflow-hidden">
             <span className="text-[13px] font-medium tracking-tight truncate text-text-primary dark:text-white">{headerTitle}</span>
             {!allCompleted && (
-              <span className="text-[11px] text-text-secondary dark:text-white/70 font-mono tracking-tight truncate">
-                {overallPct}% • {formatBytes(uploadedBytes)} of {formatBytes(totalBytes)}
+              <span className="text-[11px] text-text-secondary dark:text-white/70 font-mono tracking-tight truncate flex items-center gap-1">
+                <NumberFlow value={overallPct} />% • {formatBytes(uploadedBytes)} of {formatBytes(totalBytes)}
               </span>
             )}
           </div>
@@ -137,7 +145,16 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
       )}
 
       {/* 3. Body List (Collapsible) */}
-      {!isMinimized && (
+      <AnimatePresence initial={false}>
+        {!isMinimized && (
+          <motion.div
+            key="upload-tray-body"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+            className="overflow-hidden"
+          >
         <>
           <div className="max-h-72 overflow-y-auto divide-y divide-divider/15 text-xs">
             {queue.map((item) => {
@@ -162,7 +179,7 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
                   {/* File Details */}
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium text-[13px] text-text-primary" title={item.file.name}>
-                      {item.file.name}
+                      {truncateMiddle(item.file.name, 28)}
                     </div>
 
                     <div className="text-[11px] truncate mt-0.5">
@@ -186,7 +203,9 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
                       ) : isUploading ? (
                         <span className="text-text-secondary flex items-center gap-1.5 font-mono">
                           <span>{formatBytes(item.bytesUploaded)}</span> of <span>{formatBytes(item.size)}</span>
-                          <span className="font-sans font-medium text-text-primary">• {item.progress}%</span>
+                          <span className="font-sans font-medium text-text-primary flex items-center gap-0.5">
+                            • <NumberFlow value={item.progress} />%
+                          </span>
                           {item.speed > 0 && <span className="font-sans text-text-secondary">• {formatSpeed(item.speed)}</span>}
                         </span>
                       ) : isQueued ? (
@@ -260,7 +279,9 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
             </div>
           )}
         </>
-      )}
-    </aside>
+      </motion.div>
+    )}
+  </AnimatePresence>
+</motion.aside>
   );
 };

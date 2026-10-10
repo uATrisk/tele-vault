@@ -17,6 +17,7 @@ import { api } from '../api';
 import { idb, UploadJobRecord } from '../db';
 import { processMediaFile } from './media';
 import { getUniqueName } from '../utils/folderTree';
+import { workerSha256 } from '../workers/workerBridge';
 
 export interface UploadQueueItem {
   id: string; // uploadId
@@ -349,7 +350,8 @@ export class UploadManager {
       favorite: false,
       starred: false,
       trashed: false,
-      albumIds: []
+      albumIds: [],
+      thumbHash: mediaMeta.thumbHash || null
     };
 
     const encryptedManifest = await encryptManifest(
@@ -396,18 +398,15 @@ export class UploadManager {
 
   private async calculateFileSha256(file: File): Promise<string> {
     const slice = await file.slice(0, Math.min(file.size, 1024 * 1024)).arrayBuffer();
-    // For fast hashing of huge files, hash the first MB + size + name to ensure fast dedupe
-    // or compute standard SHA-256 for medium files:
     if (file.size <= 20 * 1024 * 1024) {
       const fullBuf = await file.arrayBuffer();
-      return sha256Digest(new Uint8Array(fullBuf));
+      return workerSha256(fullBuf);
     } else {
-      // Chunked stream hash for large files
       const combined = new Uint8Array(slice.byteLength + 16);
       combined.set(new Uint8Array(slice), 0);
       const view = new DataView(combined.buffer);
       view.setFloat64(slice.byteLength, file.size);
-      return sha256Digest(combined);
+      return workerSha256(combined.buffer);
     }
   }
 }

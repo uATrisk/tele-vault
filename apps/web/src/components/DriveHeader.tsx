@@ -284,16 +284,8 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
         )}
       </div>
 
-      {/* Right: Theme Toggle Switch, Settings, Lock, and Account Avatar */}
+      {/* Right: Settings, Lock, and Account Avatar */}
       <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end relative">
-        {/* Day / Night Theme Switch */}
-        <Tooltip text={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
-          <ThemeSwitch
-            isDark={isDark}
-            onToggle={() => onThemeChange(isDark ? 'light' : 'dark')}
-          />
-        </Tooltip>
-
         <Tooltip text="Settings">
           <IconButton aria-label="Settings" onClick={onOpenSettings} className="hidden sm:inline-flex">
             <Icon name="settings" size={20} />
@@ -323,21 +315,51 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
           <div
             ref={accountMenuRef}
             role="menu"
-            className="absolute right-0 top-12 mt-2 w-72 p-3 bg-surface text-text-primary rounded-2xl shadow-[0_10px_36px_rgba(0,0,0,0.16),0_2px_10px_rgba(0,0,0,0.06)] border border-divider/40 select-none animate-in fade-in zoom-in-95 duration-150 z-50"
+            className="absolute right-0 top-12 mt-2 w-80 p-4 bg-surface text-text-primary rounded-3xl shadow-[0_12px_48px_rgba(0,0,0,0.16),0_2px_8px_rgba(0,0,0,0.08)] border border-divider/40 select-none animate-in fade-in zoom-in-95 duration-150 z-50"
           >
             {/* Account Identity Header */}
-            <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-hover/40 mb-2">
-              <div className="w-10 h-10 rounded-full bg-accent text-white font-semibold text-base flex items-center justify-center shrink-0 shadow-xs">
+            <div className="flex flex-col items-center pt-2 pb-3 px-2 text-center">
+              <div className="w-14 h-14 rounded-full bg-accent text-white font-medium text-xl flex items-center justify-center shadow-xs select-none mb-2.5">
                 T
               </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-[14px] font-semibold text-text-primary truncate">TeleVault</div>
-                <div className="text-[12px] text-text-secondary truncate mt-0.5">Private Telegram Cloud</div>
+              <div className="text-[15px] font-semibold text-text-primary tracking-tight">
+                TeleVault
+              </div>
+              <div className="text-[12px] text-text-secondary mt-0.5">
+                Private Telegram Cloud
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 mt-2.5 rounded-full text-[11px] font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span>Session Active &amp; Encrypted</span>
               </div>
             </div>
 
+            {/* Clean Divider */}
+            <div className="my-2 border-t border-divider/30" />
+
             {/* Menu Action Items */}
             <div className="space-y-1">
+              {/* Day / Night Theme Switch Row */}
+              <div
+                onClick={() => onThemeChange(isDark ? 'light' : 'dark')}
+                className="w-full h-11 px-3.5 rounded-xl flex items-center justify-between text-[14px] font-medium text-text-primary hover:bg-hover active:bg-hover/80 transition-colors cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-3.5">
+                  <span className="text-text-secondary shrink-0">
+                    <Icon
+                      name={isDark ? 'dark_mode' : 'light_mode'}
+                      size={20}
+                      className={isDark ? 'text-sky-400' : 'text-amber-500'}
+                    />
+                  </span>
+                  <span>Dark theme</span>
+                </div>
+                <ThemeSwitch
+                  isDark={isDark}
+                  onToggle={() => onThemeChange(isDark ? 'light' : 'dark')}
+                />
+              </div>
+
               <button
                 type="button"
                 role="menuitem"
