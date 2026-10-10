@@ -4,6 +4,7 @@ import { IconButton } from './ui/IconButton';
 import { Tooltip } from './ui/Tooltip';
 import { Menu, MenuItemProps } from './ui/Menu';
 import { BrandLogo } from './ui/BrandLogo';
+import { Switch } from './ui/Switch';
 import { FilterCategory, FilterModified } from './DriveFilterChips';
 
 interface DriveHeaderProps {
@@ -77,6 +78,12 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
     onSearchChange('');
   };
 
+  const isDark =
+    currentTheme === 'dark' ||
+    (currentTheme === 'system' &&
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches);
+
   const accountMenuItems: MenuItemProps[] = [
     {
       label: 'Settings',
@@ -84,13 +91,18 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
       onClick: onOpenSettings
     },
     {
-      label: `Theme: ${currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)}`,
-      icon: currentTheme === 'dark' ? 'dark_mode' : currentTheme === 'light' ? 'light_mode' : 'brightness_medium',
+      label: 'Dark theme',
+      closeOnClick: false,
       onClick: () => {
-        const nextTheme =
-          currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'system' : 'light';
-        onThemeChange(nextTheme);
-      }
+        onThemeChange(isDark ? 'light' : 'dark');
+      },
+      rightElement: (
+        <Switch
+          checked={isDark}
+          onChange={(newVal) => onThemeChange(newVal ? 'dark' : 'light')}
+          ariaLabel="Toggle dark theme"
+        />
+      )
     },
     {
       label: 'Lock Vault',

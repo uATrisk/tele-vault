@@ -25,11 +25,12 @@ test.describe('Search Options, Filters, Logo, and Settings E2E', () => {
     const logo = page.locator('svg[aria-label="TeleVault Logo"]').first();
     await expect(logo).toBeVisible();
 
-    // 5. Verify Account Menu: Log out has logout icon, Theme has theme icon (not close or tune)
+    // 5. Verify Account Menu: Log out has logout icon, Dark theme has toggle switch (no left icon)
     const avatar = page.locator('button[aria-label="Account options"]');
     await avatar.click();
     await expect(page.locator('text=Log out')).toBeVisible();
-    await expect(page.locator('text=Theme:')).toBeVisible();
+    await expect(page.locator('text=Dark theme')).toBeVisible();
+    await expect(page.locator('button[role="switch"]')).toBeVisible();
 
     // Verify Log out button is visible with its icon
     const logoutBtn = page.locator('button[role="menuitem"]:has-text("Log out")');

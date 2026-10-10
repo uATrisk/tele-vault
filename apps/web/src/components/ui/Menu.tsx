@@ -10,6 +10,8 @@ export interface MenuItemProps {
   disabled?: boolean;
   onClick?: () => void;
   dividerAbove?: boolean;
+  rightElement?: React.ReactNode;
+  closeOnClick?: boolean;
 }
 
 export interface MenuProps {
@@ -87,7 +89,9 @@ export const Menu: React.FC<MenuProps> = ({
             onClick={() => {
               if (item.disabled) return;
               item.onClick?.();
-              onClose();
+              if (item.closeOnClick !== false) {
+                onClose();
+              }
             }}
             className={`w-full h-9.5 px-3 rounded-xl flex items-center gap-3 text-[13.5px] font-medium text-left transition-colors ${
               item.disabled
@@ -106,6 +110,11 @@ export const Menu: React.FC<MenuProps> = ({
             {item.shortcut && (
               <span className="text-xs text-text-secondary/80 font-mono tracking-tighter">
                 {item.shortcut}
+              </span>
+            )}
+            {item.rightElement && (
+              <span className="shrink-0 flex items-center">
+                {item.rightElement}
               </span>
             )}
           </button>
