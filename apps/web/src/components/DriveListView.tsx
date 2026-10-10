@@ -22,6 +22,9 @@ interface DriveListViewProps {
   onRename: (item: ItemManifest) => void;
   onToggleStar: (item: ItemManifest) => void;
   onTrash: (item: ItemManifest) => void;
+  isTrashView?: boolean;
+  onRestoreItem?: (item: ItemManifest) => void;
+  onDeleteForeverItem?: (item: ItemManifest) => void;
   sortField: SortField;
   sortOrder: SortOrder;
   onSortChange: (field: SortField) => void;
@@ -40,6 +43,9 @@ export const DriveListView: React.FC<DriveListViewProps> = ({
   onRename,
   onToggleStar,
   onTrash,
+  isTrashView,
+  onRestoreItem,
+  onDeleteForeverItem,
   sortField,
   sortOrder,
   onSortChange
@@ -222,44 +228,73 @@ export const DriveListView: React.FC<DriveListViewProps> = ({
                     className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {item.kind !== 'folder' && (
-                      <button
-                        type="button"
-                        aria-label="Download"
-                        onClick={() => onDownload(item)}
-                        className="p-1.5 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10"
-                        title="Download"
-                      >
-                        <Icon name="download" size={16} />
-                      </button>
+                    {isTrashView || item.trashed ? (
+                      <>
+                        {onRestoreItem && (
+                          <button
+                            type="button"
+                            aria-label="Restore from trash"
+                            onClick={() => onRestoreItem(item)}
+                            className="p-1.5 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10"
+                            title="Restore from trash"
+                          >
+                            <Icon name="restore_from_trash" size={16} />
+                          </button>
+                        )}
+                        {onDeleteForeverItem && (
+                          <button
+                            type="button"
+                            aria-label="Delete permanently"
+                            onClick={() => onDeleteForeverItem(item)}
+                            className="p-1.5 rounded-full text-text-secondary hover:text-danger hover:bg-black/10 dark:hover:bg-white/10"
+                            title="Delete permanently"
+                          >
+                            <Icon name="delete_forever" size={16} />
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {item.kind !== 'folder' && (
+                          <button
+                            type="button"
+                            aria-label="Download"
+                            onClick={() => onDownload(item)}
+                            className="p-1.5 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10"
+                            title="Download"
+                          >
+                            <Icon name="download" size={16} />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          aria-label="Rename"
+                          onClick={() => onRename(item)}
+                          className="p-1.5 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10"
+                          title="Rename"
+                        >
+                          <Icon name="edit" size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={isStarred ? 'Remove from starred' : 'Add to starred'}
+                          onClick={() => onToggleStar(item)}
+                          className="p-1.5 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10"
+                          title="Star"
+                        >
+                          <Icon name={isStarred ? 'star_filled' : 'star'} size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Move to trash"
+                          onClick={() => onTrash(item)}
+                          className="p-1.5 rounded-full text-text-secondary hover:text-danger hover:bg-black/10 dark:hover:bg-white/10"
+                          title="Move to trash"
+                        >
+                          <Icon name="trash" size={16} />
+                        </button>
+                      </>
                     )}
-                    <button
-                      type="button"
-                      aria-label="Rename"
-                      onClick={() => onRename(item)}
-                      className="p-1.5 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10"
-                      title="Rename"
-                    >
-                      <Icon name="edit" size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={isStarred ? 'Remove from starred' : 'Add to starred'}
-                      onClick={() => onToggleStar(item)}
-                      className="p-1.5 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10"
-                      title="Star"
-                    >
-                      <Icon name={isStarred ? 'star_filled' : 'star'} size={16} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Move to trash"
-                      onClick={() => onTrash(item)}
-                      className="p-1.5 rounded-full text-text-secondary hover:text-danger hover:bg-black/10 dark:hover:bg-white/10"
-                      title="Move to trash"
-                    >
-                      <Icon name="trash" size={16} />
-                    </button>
                   </div>
                 </td>
               </tr>

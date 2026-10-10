@@ -13,6 +13,9 @@ interface DriveFolderCardProps {
   onTrash: () => void;
   onToggleStar: () => void;
   onDropMove?: (droppedItemIds: string[]) => void;
+  isTrashView?: boolean;
+  onRestore?: () => void;
+  onDeleteForever?: () => void;
 }
 
 export const DriveFolderCard: React.FC<DriveFolderCardProps> = ({
@@ -24,24 +27,52 @@ export const DriveFolderCard: React.FC<DriveFolderCardProps> = ({
   onMoveTo,
   onTrash,
   onToggleStar,
-  onDropMove
+  onDropMove,
+  isTrashView,
+  onRestore,
+  onDeleteForever
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const menuBtnRef = useRef<HTMLButtonElement>(null);
 
-  const menuItems: MenuItemProps[] = [
-    { label: 'Open', icon: 'folder_open', onClick: onOpen },
-    { label: 'Rename', icon: 'edit', onClick: onRename },
-    { label: 'Move to', icon: 'drive_file_move', onClick: onMoveTo },
-    {
-      label: folder.starred || folder.favorite ? 'Remove from starred' : 'Add to starred',
-      icon: folder.starred || folder.favorite ? 'star_filled' : 'star',
-      onClick: onToggleStar,
-      dividerAbove: true
-    },
-    { label: 'Move to trash', icon: 'trash', danger: true, onClick: onTrash, dividerAbove: true }
-  ];
+  const isTrashed = !!(folder.trashed || isTrashView);
+
+  const menuItems: MenuItemProps[] = isTrashed
+    ? [
+        ...(onRestore
+          ? [
+              {
+                label: 'Restore from trash',
+                icon: 'restore_from_trash' as const,
+                onClick: onRestore
+              }
+            ]
+          : []),
+        ...(onDeleteForever
+          ? [
+              {
+                label: 'Delete permanently',
+                icon: 'delete_forever' as const,
+                danger: true,
+                onClick: onDeleteForever,
+                dividerAbove: !onRestore
+              }
+            ]
+          : [])
+      ]
+    : [
+        { label: 'Open', icon: 'folder_open', onClick: onOpen },
+        { label: 'Rename', icon: 'edit', onClick: onRename },
+        { label: 'Move to', icon: 'drive_file_move', onClick: onMoveTo },
+        {
+          label: folder.starred || folder.favorite ? 'Remove from starred' : 'Add to starred',
+          icon: folder.starred || folder.favorite ? 'star_filled' : 'star',
+          onClick: onToggleStar,
+          dividerAbove: true
+        },
+        { label: 'Move to trash', icon: 'trash', danger: true, onClick: onTrash, dividerAbove: true }
+      ];
 
   const handleClick = (e: React.MouseEvent) => {
     const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 768);

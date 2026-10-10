@@ -378,6 +378,9 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
                       onTrash={() => onTrashItems([folder])}
                       onToggleStar={() => onToggleStarItems([folder])}
                       onDropMove={(droppedIds) => onDropMoveToFolder(folder.id, droppedIds)}
+                      isTrashView={currentRoute === 'trash'}
+                      onRestore={() => onRestoreItems([folder])}
+                      onDeleteForever={() => onDeleteForeverItems([folder])}
                     />
                   ))}
                 </div>
@@ -411,6 +414,9 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
                       onTrash={() => onTrashItems([file])}
                       onToggleStar={() => onToggleStarItems([file])}
                       onOpenDetails={onToggleDetails}
+                      isTrashView={currentRoute === 'trash'}
+                      onRestore={() => onRestoreItems([file])}
+                      onDeleteForever={() => onDeleteForeverItems([file])}
                     />
                   ))}
                 </div>
@@ -432,6 +438,9 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
             onRename={onRenameItem}
             onToggleStar={(item) => onToggleStarItems([item])}
             onTrash={(item) => onTrashItems([item])}
+            isTrashView={currentRoute === 'trash'}
+            onRestoreItem={(item) => onRestoreItems([item])}
+            onDeleteForeverItem={(item) => onDeleteForeverItems([item])}
             sortField={sortField}
             sortOrder={sortOrder}
             onSortChange={handleSortChange}

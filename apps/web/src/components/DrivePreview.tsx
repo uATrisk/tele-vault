@@ -17,6 +17,9 @@ interface DrivePreviewProps {
   onToggleStar: (item: ItemManifest) => void;
   onTrash: (item: ItemManifest) => void;
   onOpenDetails?: () => void;
+  isTrashView?: boolean;
+  onRestore?: (item: ItemManifest) => void;
+  onDeleteForever?: (item: ItemManifest) => void;
 }
 
 export const DrivePreview: React.FC<DrivePreviewProps> = ({
@@ -28,7 +31,10 @@ export const DrivePreview: React.FC<DrivePreviewProps> = ({
   onPrev,
   onToggleStar,
   onTrash,
-  onOpenDetails
+  onOpenDetails,
+  isTrashView,
+  onRestore,
+  onDeleteForever
 }) => {
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -193,17 +199,63 @@ export const DrivePreview: React.FC<DrivePreviewProps> = ({
             </Tooltip>
           )}
 
-          <Tooltip text={isStarred ? 'Remove from starred' : 'Add to starred'}>
-            <IconButton size="md" aria-label="Star" onClick={() => onToggleStar(item)} className="text-white hover:bg-white/10">
-              <Icon name={isStarred ? 'star_filled' : 'star'} size={20} className={isStarred ? 'text-amber-400' : ''} />
-            </IconButton>
-          </Tooltip>
+          {isTrashView || item.trashed ? (
+            <>
+              {onRestore && (
+                <Tooltip text="Restore from trash">
+                  <IconButton
+                    size="md"
+                    aria-label="Restore from trash"
+                    onClick={() => onRestore(item)}
+                    className="text-white hover:bg-white/10"
+                  >
+                    <Icon name="restore_from_trash" size={20} />
+                  </IconButton>
+                </Tooltip>
+              )}
 
-          <Tooltip text="Move to trash">
-            <IconButton size="md" aria-label="Move to trash" onClick={() => onTrash(item)} className="text-white hover:bg-white/10">
-              <Icon name="trash" size={20} />
-            </IconButton>
-          </Tooltip>
+              {onDeleteForever && (
+                <Tooltip text="Delete permanently">
+                  <IconButton
+                    size="md"
+                    aria-label="Delete permanently"
+                    onClick={() => onDeleteForever(item)}
+                    className="text-red-400 hover:text-red-300 hover:bg-white/10"
+                  >
+                    <Icon name="delete_forever" size={20} />
+                  </IconButton>
+                </Tooltip>
+              )}
+            </>
+          ) : (
+            <>
+              <Tooltip text={isStarred ? 'Remove from starred' : 'Add to starred'}>
+                <IconButton
+                  size="md"
+                  aria-label="Star"
+                  onClick={() => onToggleStar(item)}
+                  className="text-white hover:bg-white/10"
+                >
+                  <Icon
+                    name={isStarred ? 'star_filled' : 'star'}
+                    size={20}
+                    className={isStarred ? 'text-amber-400' : ''}
+                  />
+                </IconButton>
+              </Tooltip>
+
+              <Tooltip text="Move to trash">
+                <IconButton
+                  size="md"
+                  aria-label="Move to trash"
+                  onClick={() => onTrash(item)}
+                  className="text-white hover:bg-white/10"
+                >
+                  <Icon name="trash" size={20} />
+                </IconButton>
+              </Tooltip>
+            </>
+          )}
         </div>
       </div>
 

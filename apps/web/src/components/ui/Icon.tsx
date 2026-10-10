@@ -28,6 +28,7 @@ export type IconName =
   | 'star_filled'
   | 'trash'
   | 'restore'
+  | 'restore_from_trash'
   | 'delete_forever'
   | 'download'
   | 'drive_file_move'
@@ -122,6 +123,7 @@ export const Icon: React.FC<IconProps> = ({
       case 'trash':
         return <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z" fill="currentColor" />;
       case 'restore':
+      case 'restore_from_trash':
         return <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z" fill="currentColor" />;
       case 'delete_forever':
         return <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7zm-3.59 5L13 13.41 11.59 12 10 13.59 11.41 15 10 16.41 11.59 18 13 16.59 14.41 18 16 16.41 14.59 15 16 13.59 14.41 12z" fill="currentColor" />;

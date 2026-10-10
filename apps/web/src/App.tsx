@@ -1022,6 +1022,15 @@ export const App: React.FC = () => {
             const idx = viewFiles.findIndex((i) => i.id === previewItem.id);
             if (idx > 0) setPreviewItem(viewFiles[idx - 1]);
           }}
+          isTrashView={currentRoute === 'trash'}
+          onRestore={(it) => {
+            handleRestoreItems([it]);
+            setPreviewItem(null);
+          }}
+          onDeleteForever={(it) => {
+            setConfirmDeleteTargets({ items: [it] });
+            setPreviewItem(null);
+          }}
           onToggleStar={(it) => handleToggleStarItems([it])}
           onTrash={(it) => {
             handleTrashItems([it]);

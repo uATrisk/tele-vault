@@ -19,6 +19,9 @@ interface DriveFileCardProps {
   onTrash: () => void;
   onToggleStar: () => void;
   onOpenDetails: () => void;
+  isTrashView?: boolean;
+  onRestore?: () => void;
+  onDeleteForever?: () => void;
 }
 
 export const DriveFileCard: React.FC<DriveFileCardProps> = ({
@@ -32,7 +35,10 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
   onMoveTo,
   onTrash,
   onToggleStar,
-  onOpenDetails
+  onOpenDetails,
+  isTrashView,
+  onRestore,
+  onDeleteForever
 }) => {
   const [thumbUrl, setThumbUrl] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -66,20 +72,49 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
     };
   }, [item.id, thumbKey, meta.previewable]);
 
-  const menuItems: MenuItemProps[] = [
-    { label: 'Preview', icon: 'image', onClick: onOpen },
-    { label: 'Download', icon: 'download', onClick: onDownload },
-    { label: 'Rename', icon: 'edit', shortcut: 'F2', onClick: onRename },
-    { label: 'Move to', icon: 'drive_file_move', onClick: onMoveTo },
-    {
-      label: item.starred || item.favorite ? 'Remove from starred' : 'Add to starred',
-      icon: item.starred || item.favorite ? 'star_filled' : 'star',
-      onClick: onToggleStar,
-      dividerAbove: true
-    },
-    { label: 'Details', icon: 'info', onClick: onOpenDetails },
-    { label: 'Move to trash', icon: 'trash', danger: true, onClick: onTrash, dividerAbove: true }
-  ];
+  const isTrashed = !!(item.trashed || isTrashView);
+
+  const menuItems: MenuItemProps[] = isTrashed
+    ? [
+        { label: 'Preview', icon: 'image', onClick: onOpen },
+        { label: 'Download', icon: 'download', onClick: onDownload },
+        { label: 'Details', icon: 'info', onClick: onOpenDetails },
+        ...(onRestore
+          ? [
+              {
+                label: 'Restore from trash',
+                icon: 'restore_from_trash' as const,
+                onClick: onRestore,
+                dividerAbove: true
+              }
+            ]
+          : []),
+        ...(onDeleteForever
+          ? [
+              {
+                label: 'Delete permanently',
+                icon: 'delete_forever' as const,
+                danger: true,
+                onClick: onDeleteForever,
+                dividerAbove: !onRestore
+              }
+            ]
+          : [])
+      ]
+    : [
+        { label: 'Preview', icon: 'image', onClick: onOpen },
+        { label: 'Download', icon: 'download', onClick: onDownload },
+        { label: 'Rename', icon: 'edit', shortcut: 'F2', onClick: onRename },
+        { label: 'Move to', icon: 'drive_file_move', onClick: onMoveTo },
+        {
+          label: item.starred || item.favorite ? 'Remove from starred' : 'Add to starred',
+          icon: item.starred || item.favorite ? 'star_filled' : 'star',
+          onClick: onToggleStar,
+          dividerAbove: true
+        },
+        { label: 'Details', icon: 'info', onClick: onOpenDetails },
+        { label: 'Move to trash', icon: 'trash', danger: true, onClick: onTrash, dividerAbove: true }
+      ];
 
   const handleClick = (e: React.MouseEvent) => {
     // If clicking checkbox, more menu, or an interactive child, let their handler execute
