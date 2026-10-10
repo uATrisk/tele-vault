@@ -85,8 +85,6 @@ export const DriveFolderCard: React.FC<DriveFolderCardProps> = ({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
       onClick={handleClick}
       onDoubleClick={onOpen}
       onContextMenu={(e) => {

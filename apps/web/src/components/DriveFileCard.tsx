@@ -125,8 +125,6 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData('application/json', JSON.stringify({ itemIds: [item.id] }));

@@ -54,14 +54,7 @@ const SettingsModal = React.lazy(() =>
 const CommandPaletteModal = React.lazy(() =>
   import('./components/CommandPaletteModal').then((m) => ({ default: m.CommandPaletteModal }))
 );
-const DesignShowcase = React.lazy(() =>
-  (import.meta as any).env?.DEV
-    ? import('./components/ui/DesignShowcase').then((m) => ({ default: m.DesignShowcase }))
-    : Promise.resolve({ default: () => null })
-);
-const Showcase = React.lazy(() =>
-  import('./components/ui/Showcase').then((m) => ({ default: m.Showcase }))
-);
+
 
 type AppState = 'loading' | 'login' | 'setup' | 'unlock' | 'unlocked';
 
@@ -90,8 +83,6 @@ export const App: React.FC = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [previewItem, setPreviewItem] = useState<ItemManifest | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isShowcaseOpen, setIsShowcaseOpen] = useState(false);
-  const [isDesignShowcase, setIsDesignShowcase] = useState(false);
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -172,12 +163,7 @@ export const App: React.FC = () => {
       const q = decodeURIComponent(hash.replace('#/search?q=', ''));
       setSearchQuery(q);
       setCurrentRoute('drive');
-    } else if (hash === '#/showcase') {
-      setIsShowcaseOpen(true);
-    } else if (hash === '#/_design') {
-      setIsDesignShowcase(true);
     } else {
-      setIsDesignShowcase(false);
       setCurrentRoute('drive');
       setCurrentFolderId(null);
     }
@@ -931,17 +917,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // 14. Render Dev Showcase if requested
-  if (isDesignShowcase) {
-    return (
-      <div className="relative">
-        <React.Suspense fallback={<div className="min-h-screen bg-page p-8 text-text-secondary">Loading showcase...</div>}>
-          <DesignShowcase />
-        </React.Suspense>
-        <Toaster />
-      </div>
-    );
-  }
+
 
   // 15. Render Views based on AppState
   if (appState === 'loading') {
@@ -1212,12 +1188,7 @@ export const App: React.FC = () => {
         </React.Suspense>
       )}
 
-      {/* 6. Design System Showcase */}
-      {isShowcaseOpen && (
-        <React.Suspense fallback={null}>
-          <Showcase onClose={() => setIsShowcaseOpen(false)} />
-        </React.Suspense>
-      )}
+
 
       {/* 8. Off-Screen File Inputs (Must NOT be display:none for iOS Safari & Mobile WebKit support) */}
       <input

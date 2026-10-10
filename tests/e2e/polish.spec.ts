@@ -4,29 +4,33 @@ import path from 'node:path';
 import fs from 'node:fs';
 
 const POLISH_SCREENSHOT_DIR = path.resolve(process.cwd(), 'docs/screenshots/polish');
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN || 'A221707544t';
+const PASSPHRASE = 'correct horse battery staple purple sunset';
+
+async function loginAndUnlock(page: any) {
+  await page.goto('/');
+  await expect(page.locator('h1')).toContainText('TeleVault');
+  await page.fill('input[placeholder*="access password"]', ACCESS_TOKEN);
+  await page.click('button[type="submit"]');
+
+  await expect(page.locator('h1')).toContainText('Unlock TeleVault');
+  await page.fill('input[placeholder="Enter your passphrase"]', PASSPHRASE);
+  await page.click('button[type="submit"]');
+
+  await expect(page.locator('header').getByText('TeleVault')).toBeVisible({ timeout: 10000 });
+}
 
 test.describe('TeleVault Polish & Craft Verification (COMPONENTS_POLISH_BRIEF)', () => {
   test.beforeAll(() => {
     fs.mkdirSync(POLISH_SCREENSHOT_DIR, { recursive: true });
   });
 
-  test('1. Dev-only Design System Showcase route (#/_design)', async ({ page }) => {
-    await page.goto('/#/_design');
-    await expect(page.locator('h1')).toContainText('TeleVault Design System Showcase');
-    await expect(page.locator('text=Buttons (All States & Sizes)')).toBeVisible();
-    await expect(page.locator('text=Filter Chips')).toBeVisible();
-
-    await page.screenshot({
-      path: path.join(POLISH_SCREENSHOT_DIR, '01_design_showcase.png')
-    });
-  });
-
-  test('2. Command Palette (Cmd+K / Ctrl+K) and keyboard navigation', async ({ page }) => {
-    await page.goto('/#/_design');
+  test('1. Command Palette (Cmd+K / Ctrl+K) and keyboard navigation', async ({ page }) => {
+    await loginAndUnlock(page);
 
     // Trigger Command Palette via shortcut
     await page.keyboard.press('Control+k');
-    
+
     // Command input should be visible and focused
     const cmdInput = page.locator('input[placeholder*="Type a command"]');
     if (await cmdInput.isVisible({ timeout: 2000 })) {
@@ -37,18 +41,18 @@ test.describe('TeleVault Polish & Craft Verification (COMPONENTS_POLISH_BRIEF)',
     }
   });
 
-  test('3. Reduced-Motion verification (prefers-reduced-motion: reduce)', async ({ page }) => {
+  test('2. Reduced-Motion verification (prefers-reduced-motion: reduce)', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/#/_design');
+    await loginAndUnlock(page);
 
-    await expect(page.locator('h1')).toContainText('TeleVault Design System Showcase');
+    await expect(page.locator('header').getByText('TeleVault')).toBeVisible();
     await page.screenshot({
       path: path.join(POLISH_SCREENSHOT_DIR, '03_reduced_motion.png')
     });
   });
 
-  test('4. Axe accessibility audit on polished components', async ({ page }) => {
-    await page.goto('/#/_design');
+  test('3. Axe accessibility audit on polished components', async ({ page }) => {
+    await loginAndUnlock(page);
 
     const axeResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])
@@ -62,8 +66,8 @@ test.describe('TeleVault Polish & Craft Verification (COMPONENTS_POLISH_BRIEF)',
     expect(criticalViolations).toEqual([]);
   });
 
-  test('5. Cumulative Layout Shift (CLS) audit on page load', async ({ page }) => {
-    await page.goto('/#/_design');
+  test('4. Cumulative Layout Shift (CLS) audit on page load', async ({ page }) => {
+    await page.goto('/');
 
     // Evaluate CLS via PerformanceObserver
     const clsValue = await page.evaluate(() => {

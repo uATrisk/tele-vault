@@ -70,7 +70,7 @@ test.describe('Mobile Viewport & Touch Ergonomics E2E', () => {
     await page.click('button:has-text("Create")');
 
     // 10. Verify folder appeared in file list
-    const folderCard = page.locator('main').getByRole('button', { name: /Mobile Test Vault/i });
+    const folderCard = page.locator('main').getByText('Mobile Test Vault').first();
     await expect(folderCard).toBeVisible();
 
     // 11. Single-tap folder on mobile to open
