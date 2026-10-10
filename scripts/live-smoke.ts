@@ -75,8 +75,7 @@ export async function runLiveSmokeCLI() {
   console.log('Step 3: Uploading encrypted test document to Telegram channel...');
   const uploadRes = await tg.sendDocument(
     encryptedChunk,
-    `${fileIdHex}.bin`,
-    'application/octet-stream'
+    `${fileIdHex}.bin`
   );
   console.log(`✅ Uploaded to Telegram! Message ID: ${uploadRes.messageId}, File ID: ${uploadRes.fileId}\n`);
 

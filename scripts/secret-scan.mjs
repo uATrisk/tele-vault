@@ -51,7 +51,15 @@ function scanDir(dir) {
     const fullPath = path.join(dir, entry.name);
     const relPath = path.relative(process.cwd(), fullPath);
 
-    if (IGNORED_PATHS.some((p) => relPath === p || relPath.startsWith(p + '/'))) {
+    if (
+      IGNORED_PATHS.some(
+        (p) =>
+          relPath === p ||
+          relPath.endsWith('/' + p) ||
+          relPath.startsWith(p + '/') ||
+          relPath.includes('/' + p + '/')
+      )
+    ) {
       continue;
     }
 
