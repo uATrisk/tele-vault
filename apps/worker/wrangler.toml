@@ -1,0 +1,17 @@
+name = "televault"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "../web/dist"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "televault-db"
+database_id = "local-televault-d1-id"
+migrations_dir = "migrations"
+
+[triggers]
+crons = ["0 3 * * *"]

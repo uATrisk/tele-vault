@@ -2,10 +2,11 @@
 
 ## Status Overview
 
-- **Current Phase:** Phase 3 (Mock Telegram and Worker)
+- **Current Phase:** Phase 4 (Web app)
 - **Phase 0 Status:** Completed (All Section 6 platform facts verified, documented in `docs/DECISIONS.md`)
 - **Phase 1 Status:** Completed (Scaffolding, docs/HUMAN_SETUP.md, CI-style test:all green)
 - **Phase 2 Status:** Completed (Pure WebCrypto, Layer A test suite 100% green, property tests, KAT tests)
+- **Phase 3 Status:** Completed (Mock Telegram, Worker API & D1 migrations, Doctor diagnostics, Cron, Restore tool, Layer B test suite 100% green, docs/API.md)
 - **Last Updated:** 2026-10-10
 
 ---
@@ -41,16 +42,16 @@
   - [x] Manifest and thumbnail encryption/decryption
   - [x] Snapshot container format packing and unpacking
   - [x] Layer A tests: roundtrips, tampered data, wrong keys, Unicode NFKC, property tests, KAT tests
-- [ ] **Phase 3: Mock Telegram and Worker (`tools/mock-telegram`, `apps/worker`)**
-  - [ ] Implement Mock Telegram HTTP server with fault injection (429, 500, disconnect)
-  - [ ] Implement D1 database schema and migrations
-  - [ ] Implement Worker endpoints with Hono
-  - [ ] Implement Telegram proxy client with rate limiting & backoff
-  - [ ] Implement Worker Doctor check endpoint
-  - [ ] Implement Cron trigger (snapshot and pending chunk GC)
-  - [ ] Implement `scripts/restore.ts` and `scripts/find-channel-id.ts`
-  - [ ] Document `docs/API.md`
-  - [ ] Layer B Worker tests against Mock Telegram and local D1
+- [x] **Phase 3: Mock Telegram and Worker (`tools/mock-telegram`, `apps/worker`)**
+  - [x] Implement Mock Telegram HTTP server with fault injection (429, 500, disconnect)
+  - [x] Implement D1 database schema and migrations
+  - [x] Implement Worker endpoints with Hono
+  - [x] Implement Telegram proxy client with rate limiting & backoff
+  - [x] Implement Worker Doctor check endpoint
+  - [x] Implement Cron trigger (snapshot and pending chunk GC)
+  - [x] Implement `scripts/restore.ts` and `scripts/find-channel-id.ts`
+  - [x] Document `docs/API.md`
+  - [x] Layer B Worker tests against Mock Telegram and local D1
 - [ ] **Phase 4: Web app (`apps/web`)**
   - [ ] Vite + React + Tailwind setup
   - [ ] Setup wizard (Doctor check, passphrase strength, recovery key confirmation)

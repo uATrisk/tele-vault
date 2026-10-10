@@ -2,6 +2,7 @@ node_modules/
 .dev.vars
 .wrangler/
 dist/
+**/dist/
 dist-worker/
 build/
 .cache/

@@ -38,7 +38,9 @@ const WHITELISTED_STRINGS = [
   'tv_example_access_token_min_32_characters_random',
   'tv_example_session_secret_hmac_key_min_32_chars',
   'tv_live_example_secret_access_token_1234567890',
-  'example_session_hmac_secret_key_at_least_32_characters_long'
+  'example_session_hmac_secret_key_at_least_32_characters_long',
+  'test_access_token_min_32_chars_long_xyz',
+  'test_session_secret_min_32_characters_hmac'
 ];
 
 let foundLeaks = 0;
