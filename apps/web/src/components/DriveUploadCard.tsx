@@ -94,13 +94,8 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
             </div>
           )}
 
-          <div className="flex flex-col min-w-0 overflow-hidden">
-            <span className="text-[13px] font-medium tracking-tight truncate text-text-primary dark:text-white">{headerTitle}</span>
-            {!allCompleted && (
-              <span className="text-[11px] text-text-secondary dark:text-white/70 font-mono tracking-tight truncate flex items-center gap-1">
-                <NumberFlow value={overallPct} />% • {formatBytes(uploadedBytes)} of {formatBytes(totalBytes)}
-              </span>
-            )}
+          <div className="min-w-0 overflow-hidden">
+            <span className="text-[13.5px] font-medium tracking-tight truncate text-text-primary dark:text-white">{headerTitle}</span>
           </div>
         </div>
 
@@ -133,16 +128,6 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
           </IconButton>
         </div>
       </div>
-
-      {/* 2. Master aggregate progress bar */}
-      {!allCompleted && (
-        <div className="w-full h-1 bg-divider/30 dark:bg-white/10 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-accent to-sky-400 transition-all duration-300 ease-out"
-            style={{ width: `${Math.max(4, overallPct)}%` }}
-          />
-        </div>
-      )}
 
       {/* 3. Body List (Collapsible) */}
       <AnimatePresence initial={false}>

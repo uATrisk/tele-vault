@@ -76,7 +76,7 @@ export const Menu: React.FC<MenuProps> = ({
       ref={menuRef}
       style={style}
       role="menu"
-      className={`z-50 min-w-[240px] p-1.5 bg-surface text-text-primary rounded-2xl shadow-[0_6px_28px_rgba(0,0,0,0.15)] border border-divider/50 select-none animate-in fade-in zoom-in-95 duration-150 ${className}`}
+      className={`z-50 min-w-[210px] p-1.5 bg-surface text-text-primary rounded-2xl shadow-[0_6px_28px_rgba(0,0,0,0.15)] border border-divider/50 select-none animate-in fade-in zoom-in-95 duration-150 ${className}`}
     >
       {headerContent}
       {items.map((item, idx) => (

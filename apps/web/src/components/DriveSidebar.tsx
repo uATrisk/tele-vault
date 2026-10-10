@@ -62,15 +62,6 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
       dividerAbove: true,
       onClick: onUploadFiles
     },
-    ...(onUploadPhotos
-      ? [
-          {
-            label: 'Photo & video upload',
-            icon: 'image' as const,
-            onClick: onUploadPhotos
-          }
-        ]
-      : []),
     {
       label: 'Folder upload',
       icon: 'drive_file_move',
@@ -167,8 +158,9 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
           onClose={() => setIsNewMenuOpen(false)}
           anchorPoint={{
             x: newButtonRef.current.getBoundingClientRect().left,
-            y: newButtonRef.current.getBoundingClientRect().bottom + 4
+            y: newButtonRef.current.getBoundingClientRect().bottom + 8
           }}
+          className="w-[210px]"
         />
       )}
     </div>

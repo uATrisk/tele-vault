@@ -70,39 +70,16 @@ const DriveUploadingCard: React.FC<{
 
   return (
     <div className="relative flex flex-col p-3 rounded-2xl bg-[#F0F4F9]/90 dark:bg-[#1E1F20]/90 border border-accent/40 shadow-sm animate-in fade-in zoom-in-95 duration-200 select-none">
-      {/* 1. Header */}
-      <div className="flex items-center justify-between h-7 mb-2 gap-1.5 min-w-0">
-        <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
-          <Icon name={meta.icon} size={18} className={`${meta.color} shrink-0`} />
-          <span className="text-[13px] font-medium truncate tracking-tight text-text-primary" title={item.name}>
-            {item.name}
-          </span>
-        </div>
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            aria-label="Cancel upload"
-            className="p-1 rounded-full text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
-            title="Cancel upload"
-          >
-            <Icon name="close" size={16} />
-          </button>
-        )}
-      </div>
-
-      {/* 2. Main Canvas */}
-      <div className="relative w-full aspect-[16/10] bg-[#F8FAFD] dark:bg-[#131314] rounded-xl overflow-hidden flex items-center justify-center border border-black/[0.06] dark:border-white/[0.06]">
+      {/* 1. Main Canvas (On Top - Matches DriveFileCard) */}
+      <div className="relative w-full aspect-[16/10] bg-[#F8FAFD] dark:bg-[#131314] rounded-xl overflow-hidden flex items-center justify-center border border-black/[0.06] dark:border-white/[0.06] shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] mb-2.5">
         {localUrl ? (
           <img src={localUrl} alt={item.name} className="w-full h-full object-cover filter brightness-[0.7] blur-[1px]" />
         ) : (
-          <div className="flex flex-col items-center justify-center p-3 w-full h-full opacity-40">
-            <Icon name={meta.icon} size={28} className={meta.color} />
-          </div>
+          <div className="w-full h-full bg-[#E9EEF6]/60 dark:bg-[#282A2C]/60" />
         )}
 
         {/* Floating Glassmorphic Progress Badge */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/40 backdrop-blur-[2px] text-white p-2 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/45 backdrop-blur-[2px] text-white p-2 text-center">
           <div className="w-9 h-9 relative flex items-center justify-center">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
               <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.5" />
@@ -134,6 +111,27 @@ const DriveUploadingCard: React.FC<{
             )}
           </span>
         </div>
+      </div>
+
+      {/* 2. File Name Row (Below Canvas - Matches DriveFileCard) */}
+      <div className="flex items-center justify-between h-7 gap-1.5 min-w-0">
+        <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
+          <Icon name={meta.icon} size={18} className={`${meta.color} shrink-0`} />
+          <span className="text-[13px] font-medium truncate tracking-tight text-text-primary" title={item.name}>
+            {item.name}
+          </span>
+        </div>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Cancel upload"
+            className="p-1 rounded-full text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors shrink-0 cursor-pointer"
+            title="Cancel upload"
+          >
+            <Icon name="close" size={16} />
+          </button>
+        )}
       </div>
     </div>
   );
