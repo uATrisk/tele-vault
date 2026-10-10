@@ -25,12 +25,21 @@ test.describe('Search Options, Filters, Logo, and Settings E2E', () => {
     const logo = page.locator('svg[aria-label="TeleVault Logo"]').first();
     await expect(logo).toBeVisible();
 
-    // 5. Verify Account Menu: Log out has logout icon, Dark theme has toggle switch (no left icon)
+    // 5. Verify Main Menu Theme Switch & Account Menu
+    const themeSwitch = page.locator('button[role="switch"]');
+    await expect(themeSwitch).toBeVisible();
+
+    // Toggle theme with switch
+    await themeSwitch.click();
+    await page.waitForTimeout(200);
+
+    // Verify Account Menu: Settings, Lock Vault, Log out (no congested dark theme item)
     const avatar = page.locator('button[aria-label="Account options"]');
     await avatar.click();
+    await expect(page.locator('text=Settings')).toBeVisible();
+    await expect(page.locator('text=Lock Vault')).toBeVisible();
     await expect(page.locator('text=Log out')).toBeVisible();
-    await expect(page.locator('text=Dark theme')).toBeVisible();
-    await expect(page.locator('button[role="switch"]')).toBeVisible();
+    await expect(page.locator('button[role="menuitem"]:has-text("Dark theme")')).not.toBeVisible();
 
     // Verify Log out button is visible with its icon
     const logoutBtn = page.locator('button[role="menuitem"]:has-text("Log out")');

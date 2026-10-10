@@ -91,20 +91,6 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
       onClick: onOpenSettings
     },
     {
-      label: 'Dark theme',
-      closeOnClick: false,
-      onClick: () => {
-        onThemeChange(isDark ? 'light' : 'dark');
-      },
-      rightElement: (
-        <Switch
-          checked={isDark}
-          onChange={(newVal) => onThemeChange(newVal ? 'dark' : 'light')}
-          ariaLabel="Toggle dark theme"
-        />
-      )
-    },
-    {
       label: 'Lock Vault',
       icon: 'lock',
       dividerAbove: true,
@@ -292,8 +278,28 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
         )}
       </div>
 
-      {/* Right: Settings, Lock, and Account Avatar */}
-      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 justify-end">
+      {/* Right: Theme Toggle Switch, Settings, Lock, and Account Avatar */}
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end">
+        {/* Day / Night Theme Switch */}
+        <Tooltip text={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
+          <div
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-divider/10 hover:bg-hover active:bg-hover/80 transition-colors cursor-pointer select-none"
+            onClick={() => onThemeChange(isDark ? 'light' : 'dark')}
+            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            <Icon
+              name={isDark ? 'dark_mode' : 'light_mode'}
+              size={18}
+              className={isDark ? 'text-amber-400' : 'text-amber-500'}
+            />
+            <Switch
+              checked={isDark}
+              onChange={(newVal) => onThemeChange(newVal ? 'dark' : 'light')}
+              ariaLabel="Toggle theme"
+            />
+          </div>
+        </Tooltip>
+
         <Tooltip text="Settings">
           <IconButton aria-label="Settings" onClick={onOpenSettings} className="hidden sm:inline-flex">
             <Icon name="settings" size={20} />
@@ -315,7 +321,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
             setAccountMenuAnchor({ x: rect.right - 240, y: rect.bottom + 8 });
             setIsAccountMenuOpen(true);
           }}
-          className="w-9 h-9 ml-1.5 rounded-full bg-accent text-white font-medium text-sm flex items-center justify-center hover:shadow transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent"
+          className="w-9 h-9 ml-1 sm:ml-1.5 rounded-full bg-accent text-white font-medium text-sm flex items-center justify-center hover:shadow transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent"
         >
           T
         </button>
