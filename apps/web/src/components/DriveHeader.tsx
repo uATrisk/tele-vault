@@ -2,9 +2,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { Icon } from './ui/Icon';
 import { IconButton } from './ui/IconButton';
 import { Tooltip } from './ui/Tooltip';
-import { Menu, MenuItemProps } from './ui/Menu';
 import { BrandLogo } from './ui/BrandLogo';
-import { Switch } from './ui/Switch';
+import { ThemeSwitch } from './ui/ThemeSwitch';
 import { FilterCategory, FilterModified } from './DriveFilterChips';
 
 interface DriveHeaderProps {
@@ -38,8 +37,9 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+  const avatarButtonRef = useRef<HTMLButtonElement>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
-  const [accountMenuAnchor, setAccountMenuAnchor] = useState<{ x: number; y: number } | null>(null);
   const [isSearchOptionsOpen, setIsSearchOptionsOpen] = useState(false);
 
   // Keyboard shortcut '/' focuses search box
@@ -70,6 +70,32 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleOutside);
   }, [isSearchOptionsOpen]);
 
+  // Close account menu popover when clicking outside or pressing Escape
+  useEffect(() => {
+    if (!isAccountMenuOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (
+        accountMenuRef.current &&
+        !accountMenuRef.current.contains(e.target as Node) &&
+        avatarButtonRef.current &&
+        !avatarButtonRef.current.contains(e.target as Node)
+      ) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAccountMenuOpen]);
+
   const hasActiveFilters = categoryFilter !== 'all' || modifiedFilter !== 'all' || Boolean(searchQuery.trim());
 
   const handleResetFilters = () => {
@@ -83,26 +109,6 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
     (currentTheme === 'system' &&
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-  const accountMenuItems: MenuItemProps[] = [
-    {
-      label: 'Settings',
-      icon: 'settings',
-      onClick: onOpenSettings
-    },
-    {
-      label: 'Lock Vault',
-      icon: 'lock',
-      dividerAbove: true,
-      onClick: onLock
-    },
-    {
-      label: 'Log out',
-      icon: 'logout',
-      danger: true,
-      onClick: onLogout
-    }
-  ];
 
   return (
     <header className="h-16 px-4 flex items-center justify-between gap-4 bg-page select-none shrink-0 border-b border-divider/20 sm:border-none relative z-30">
@@ -279,25 +285,13 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
       </div>
 
       {/* Right: Theme Toggle Switch, Settings, Lock, and Account Avatar */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end relative">
         {/* Day / Night Theme Switch */}
         <Tooltip text={isDark ? 'Switch to light mode' : 'Switch to dark mode'}>
-          <div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-divider/10 hover:bg-hover active:bg-hover/80 transition-colors cursor-pointer select-none"
-            onClick={() => onThemeChange(isDark ? 'light' : 'dark')}
-            title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            <Icon
-              name={isDark ? 'dark_mode' : 'light_mode'}
-              size={18}
-              className={isDark ? 'text-amber-400' : 'text-amber-500'}
-            />
-            <Switch
-              checked={isDark}
-              onChange={(newVal) => onThemeChange(newVal ? 'dark' : 'light')}
-              ariaLabel="Toggle theme"
-            />
-          </div>
+          <ThemeSwitch
+            isDark={isDark}
+            onToggle={() => onThemeChange(isDark ? 'light' : 'dark')}
+          />
         </Tooltip>
 
         <Tooltip text="Settings">
@@ -314,38 +308,87 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
 
         {/* Circular Avatar */}
         <button
+          ref={avatarButtonRef}
           type="button"
           aria-label="Account options"
-          onClick={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            setAccountMenuAnchor({ x: rect.right - 240, y: rect.bottom + 8 });
-            setIsAccountMenuOpen(true);
-          }}
-          className="w-9 h-9 ml-1 sm:ml-1.5 rounded-full bg-accent text-white font-medium text-sm flex items-center justify-center hover:shadow transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent"
+          aria-expanded={isAccountMenuOpen}
+          onClick={() => setIsAccountMenuOpen((prev) => !prev)}
+          className="w-9 h-9 ml-1 sm:ml-1.5 rounded-full bg-accent text-white font-medium text-sm flex items-center justify-center hover:shadow transition-shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-accent cursor-pointer"
         >
           T
         </button>
 
-        <Menu
-          items={accountMenuItems}
-          isOpen={isAccountMenuOpen}
-          onClose={() => setIsAccountMenuOpen(false)}
-          anchorPoint={accountMenuAnchor}
-          headerContent={
-            <div className="px-3 py-2.5 mb-1 bg-[#EDF2FA]/80 dark:bg-[#282A2C]/80 rounded-xl border border-divider/20 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-accent text-white font-medium text-sm flex items-center justify-center shadow-xs shrink-0">
+        {/* Account Profile Popover (Authentic Google Drive Style) */}
+        {isAccountMenuOpen && (
+          <div
+            ref={accountMenuRef}
+            role="menu"
+            className="absolute right-0 top-12 mt-2 w-72 p-3 bg-surface text-text-primary rounded-2xl shadow-[0_10px_36px_rgba(0,0,0,0.16),0_2px_10px_rgba(0,0,0,0.06)] border border-divider/40 select-none animate-in fade-in zoom-in-95 duration-150 z-50"
+          >
+            {/* Account Identity Header */}
+            <div className="flex items-center gap-3 px-3 py-3 rounded-xl bg-hover/40 mb-2">
+              <div className="w-10 h-10 rounded-full bg-accent text-white font-semibold text-base flex items-center justify-center shrink-0 shadow-xs">
                 T
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[13px] font-semibold text-text-primary truncate">TeleVault Master Vault</div>
-                <div className="flex items-center gap-1.5 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                  <span className="truncate">Session Active &amp; Encrypted</span>
-                </div>
+                <div className="text-[14px] font-semibold text-text-primary truncate">TeleVault</div>
+                <div className="text-[12px] text-text-secondary truncate mt-0.5">Private Telegram Cloud</div>
               </div>
             </div>
-          }
-        />
+
+            {/* Menu Action Items */}
+            <div className="space-y-1">
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsAccountMenuOpen(false);
+                  onOpenSettings();
+                }}
+                className="w-full h-11 px-3.5 rounded-xl flex items-center gap-3.5 text-[14px] font-medium text-text-primary hover:bg-hover active:bg-hover/80 transition-colors cursor-pointer text-left"
+              >
+                <span className="text-text-secondary shrink-0">
+                  <Icon name="settings" size={20} />
+                </span>
+                <span>Settings</span>
+              </button>
+
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsAccountMenuOpen(false);
+                  onLock();
+                }}
+                className="w-full h-11 px-3.5 rounded-xl flex items-center gap-3.5 text-[14px] font-medium text-text-primary hover:bg-hover active:bg-hover/80 transition-colors cursor-pointer text-left"
+              >
+                <span className="text-text-secondary shrink-0">
+                  <Icon name="lock" size={20} />
+                </span>
+                <span>Lock Vault</span>
+              </button>
+            </div>
+
+            {/* Clean Divider */}
+            <div className="my-2 border-t border-divider/30" />
+
+            {/* Log out Button */}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setIsAccountMenuOpen(false);
+                onLogout();
+              }}
+              className="w-full h-11 px-3.5 rounded-xl flex items-center gap-3.5 text-[14px] font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 active:bg-red-500/15 transition-colors cursor-pointer text-left"
+            >
+              <span className="text-red-500 shrink-0">
+                <Icon name="logout" size={20} />
+              </span>
+              <span>Log out</span>
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
