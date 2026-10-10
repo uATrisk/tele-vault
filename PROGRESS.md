@@ -2,8 +2,9 @@
 
 ## Status Overview
 
-- **Current Phase:** Phase 1 (Scaffold and human instructions)
+- **Current Phase:** Phase 2 (Crypto package)
 - **Phase 0 Status:** Completed (All Section 6 platform facts verified, documented in `docs/DECISIONS.md`)
+- **Phase 1 Status:** Completed (Scaffolding, docs/HUMAN_SETUP.md, CI-style test:all green)
 - **Last Updated:** 2026-10-10
 
 ---
@@ -24,12 +25,12 @@
   - [x] Verified browser WebCrypto and Streams support
   - [x] Verified `showSaveFilePicker` platform availability and fallback
   - [x] Written `docs/DECISIONS.md`
-- [ ] **Phase 1: Scaffold and human instructions**
-  - [ ] Write `docs/HUMAN_SETUP.md` with step-by-step instructions for human checklist
-  - [ ] Setup npm workspaces monorepo structure
-  - [ ] Configure TypeScript, ESLint, Prettier
-  - [ ] Configure `test:all` skeleton
-  - [ ] Verify clean baseline build and lint
+- [x] **Phase 1: Scaffold and human instructions**
+  - [x] Write `docs/HUMAN_SETUP.md` with step-by-step instructions for human checklist
+  - [x] Setup npm workspaces monorepo structure
+  - [x] Configure TypeScript, ESLint, Prettier
+  - [x] Configure `test:all` skeleton
+  - [x] Verify clean baseline build and lint
 - [ ] **Phase 2: Crypto package (`packages/crypto`)**
   - [ ] Pure WebCrypto implementation (SubtleCrypto only)
   - [ ] Key derivation (MK, KEK via PBKDF2 ≥ 600,000 iter, RK via HKDF)

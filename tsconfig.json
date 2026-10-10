@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true
+  },
+  "include": ["scripts/**/*"],
+  "references": [
+    { "path": "./packages/crypto" },
+    { "path": "./tools/mock-telegram" },
+    { "path": "./apps/worker" },
+    { "path": "./apps/web" }
+  ]
+}

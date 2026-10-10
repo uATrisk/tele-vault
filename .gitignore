@@ -1,0 +1,17 @@
+node_modules/
+.dev.vars
+.wrangler/
+dist/
+dist-worker/
+build/
+.cache/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
