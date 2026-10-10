@@ -26,7 +26,8 @@
     "find-channel-id": "npx tsx scripts/find-channel-id.ts",
     "restore": "npx tsx scripts/restore.ts",
     "live-smoke": "npx tsx scripts/live-smoke.ts",
-    "deploy": "npx tsx scripts/deploy.ts"
+    "deploy": "npx tsx scripts/deploy.ts",
+    "purge": "npx tsx scripts/purge.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
