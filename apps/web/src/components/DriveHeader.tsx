@@ -88,7 +88,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
   return (
     <header className="h-16 px-4 flex items-center justify-between gap-4 bg-page select-none shrink-0 border-b border-divider/20 sm:border-none">
       {/* Left: Hamburger (mobile), Shield Logo + TeleVault wordmark */}
-      <div className="flex items-center gap-3 min-w-[240px]">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 sm:min-w-[240px] shrink-0">
         {onToggleSidebar && (
           <IconButton
             size="md"
@@ -99,20 +99,20 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
             <Icon name="menu" size={20} />
           </IconButton>
         )}
-        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => (window.location.hash = '#/drive')}>
-          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+        <div className="flex items-center gap-2 sm:gap-2.5 cursor-pointer" onClick={() => (window.location.hash = '#/drive')}>
+          <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
             <Icon name="shield" size={24} />
           </div>
-          <span className="text-[22px] font-medium tracking-tight text-text-primary">
+          <span className="text-[20px] sm:text-[22px] font-medium tracking-tight text-text-primary hidden sm:inline">
             TeleVault
           </span>
         </div>
       </div>
 
       {/* Center: Search pill */}
-      <div className="flex-1 max-w-[720px]">
-        <div className="relative flex items-center w-full h-12 rounded-full bg-search focus-within:bg-surface focus-within:shadow-md border border-transparent focus-within:border-divider/30 transition-all duration-150 px-3.5">
-          <Icon name="search" size={20} className="text-text-secondary shrink-0 mr-3" />
+      <div className="flex-1 max-w-[720px] min-w-[120px]">
+        <div className="relative flex items-center w-full h-11 sm:h-12 rounded-full bg-search focus-within:bg-surface focus-within:shadow-md border border-transparent focus-within:border-divider/30 transition-all duration-150 px-3 sm:px-3.5">
+          <Icon name="search" size={20} className="text-text-secondary shrink-0 mr-2 sm:mr-3" />
           <input
             ref={searchInputRef}
             type="text"
@@ -141,7 +141,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
       </div>
 
       {/* Right: Settings, Lock, and Account Avatar */}
-      <div className="flex items-center gap-1.5 min-w-[140px] justify-end">
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 justify-end">
         <Tooltip text="Settings">
           <IconButton aria-label="Settings" onClick={onOpenSettings}>
             <Icon name="settings" size={20} />

@@ -65,10 +65,10 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
             ref={newButtonRef}
             type="button"
             onClick={() => setIsNewMenuOpen(true)}
-            className="flex items-center gap-3 h-14 px-5 rounded-2xl bg-surface hover:bg-hover active:bg-hover text-text-primary font-medium text-sm shadow-card hover:shadow-md transition-all duration-150 border border-divider/40 md:w-auto w-full justify-center md:justify-start"
+            className="flex items-center gap-3 h-14 px-5 rounded-2xl bg-surface hover:bg-hover active:bg-hover text-text-primary font-medium text-sm shadow-card hover:shadow-md transition-all duration-150 border border-divider/40 w-full sm:w-auto md:w-auto justify-start sm:justify-center md:justify-start"
           >
-            <Icon name="add" size={24} className="text-accent" />
-            <span className="hidden md:inline">New</span>
+            <Icon name="add" size={24} className="text-accent shrink-0" />
+            <span className="inline sm:hidden md:inline">New</span>
           </button>
         </div>
 
@@ -93,9 +93,9 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
                 <Icon
                   name={item.icon}
                   size={20}
-                  className={isActive ? 'text-text-on-selected' : 'text-text-secondary'}
+                  className={isActive ? 'text-text-on-selected shrink-0' : 'text-text-secondary shrink-0'}
                 />
-                <span className="truncate hidden md:inline">{item.label}</span>
+                <span className="truncate inline sm:hidden md:inline">{item.label}</span>
               </button>
             );
           })}
@@ -105,10 +105,10 @@ export const DriveSidebar: React.FC<DriveSidebarProps> = ({
       {/* Storage Information */}
       <div className="pt-4 border-t border-divider/40 px-3 space-y-2">
         <div className="flex items-center gap-3 text-text-secondary">
-          <Icon name="cloud" size={20} />
-          <span className="text-sm font-medium hidden md:inline">Storage</span>
+          <Icon name="cloud" size={20} className="shrink-0" />
+          <span className="text-sm font-medium inline sm:hidden md:inline">Storage</span>
         </div>
-        <div className="hidden md:block space-y-1.5">
+        <div className="block sm:hidden md:block space-y-1.5">
           <div className="w-full h-1 bg-divider rounded-full overflow-hidden">
             <div className="h-full bg-accent rounded-full w-1/4 animate-pulse" />
           </div>

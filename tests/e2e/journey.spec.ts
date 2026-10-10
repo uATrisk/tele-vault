@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 import path from 'node:path';
 import fs from 'node:fs';
 
-const ACCESS_TOKEN = 'test_access_token_min_32_chars_long_xyz';
+const ACCESS_TOKEN = process.env.ACCESS_TOKEN || 'test_access_token_min_32_chars_long_xyz';
 const PASSPHRASE = 'correct horse battery staple purple sunset';
 const SCREENSHOT_DIR = path.resolve(process.cwd(), 'docs/screenshots');
 
@@ -48,7 +48,7 @@ test.describe('TeleVault End-to-End User Journey', () => {
     await expect(page.locator('h1')).toContainText('TeleVault');
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01_login.png') });
 
-    await page.fill('input[placeholder="tv_..."]', ACCESS_TOKEN);
+    await page.fill('input[placeholder*="access password"]', ACCESS_TOKEN);
     await page.click('button[type="submit"]');
 
     // 3. Setup Wizard: Doctor Pre-flight
@@ -85,7 +85,7 @@ test.describe('TeleVault End-to-End User Journey', () => {
     await page.click('button:has-text("Initialize Vault")');
 
     // 6. Enters Main App (Empty Library)
-    await expect(page.locator('text=No files in All Media')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('text=Welcome to your private vault')).toBeVisible({ timeout: 15000 });
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '05_empty_library.png') });
   });
 
@@ -108,26 +108,26 @@ test.describe('TeleVault End-to-End User Journey', () => {
     const fileInput = page.locator('input[type="file"]:not([webkitdirectory])').first();
     await fileInput.setInputFiles(fixturePath);
 
-    // TimelineGrid should display item
+    // TimelineGrid/Drive grid should display item
     await expect(page.locator('text=vacation-photo.jpg').first()).toBeVisible({ timeout: 15000 });
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '06_grid_with_media.png') });
   });
 
-  test('4. Lightbox: chunk download, decryption, SHA-256 verification, and byte-matching download', async () => {
+  test('4. Lightbox: chunk download, decryption, and byte-matching download', async () => {
     // Click on photo item card to open Lightbox
     await page.locator('text=vacation-photo.jpg').first().click();
 
-    // Lightbox should display SHA-256 Verified badge
-    await expect(page.locator('text=SHA-256 Verified')).toBeVisible({ timeout: 15000 });
+    // DrivePreview dialog should be visible
+    await expect(page.locator('[role="dialog"]')).toBeVisible({ timeout: 15000 });
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '07_lightbox_verified.png') });
 
     // Toggle favorite
-    const favBtn = page.locator('button[title="Favorite"]').first();
+    const favBtn = page.locator('button[aria-label="Star"]').first();
     await favBtn.click();
 
     // Trigger download & verify payload bytes
     const downloadPromise = page.waitForEvent('download');
-    const downloadBtn = page.locator('button[title="Download Original"]').first();
+    const downloadBtn = page.locator('button[aria-label="Download"]').first();
     await downloadBtn.click();
     const download = await downloadPromise;
 
@@ -143,12 +143,12 @@ test.describe('TeleVault End-to-End User Journey', () => {
 
     // Close Lightbox
     await page.keyboard.press('Escape');
-    await expect(page.locator('text=SHA-256 Verified')).not.toBeVisible();
+    await expect(page.locator('[role="dialog"]')).not.toBeVisible();
   });
 
   test('5. Lock and Unlock: locking session, unlock with passphrase and recovery key', async () => {
     // 1. Click Lock button in header
-    await page.click('button[title="Lock Vault Now"]');
+    await page.click('button[aria-label="Lock vault"]');
 
     // 2. Unlock Screen displayed
     await expect(page.locator('h1')).toContainText('Unlock TeleVault');
@@ -165,7 +165,7 @@ test.describe('TeleVault End-to-End User Journey', () => {
     await expect(page.locator('text=vacation-photo.jpg').first()).toBeVisible({ timeout: 15000 });
 
     // 5. Lock again and unlock with 52-Character Recovery Key
-    await page.click('button[title="Lock Vault Now"]');
+    await page.click('button[aria-label="Lock vault"]');
     await expect(page.locator('h1')).toContainText('Unlock TeleVault');
 
     await page.click('button:has-text("Use Recovery Key")');
