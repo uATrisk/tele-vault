@@ -19,14 +19,16 @@ export default {
         danger: 'var(--danger)'
       },
       borderRadius: {
-        panel: '16px',
-        card: '12px',
+        panel: '24px',
+        card: '16px',
         dialog: '28px'
       },
       boxShadow: {
         menu: 'var(--shadow-menu)',
         dialog: 'var(--shadow-dialog)',
-        card: 'var(--shadow-card)'
+        card: 'var(--shadow-card)',
+        fab: 'var(--shadow-fab)',
+        'fab-hover': 'var(--shadow-fab-hover)'
       }
     }
   },
