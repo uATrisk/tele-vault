@@ -101,6 +101,7 @@ export const App: React.FC = () => {
 
   // Hidden File Inputs
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
 
   // Theme state
@@ -926,14 +927,15 @@ export const App: React.FC = () => {
           onRouteChange={(r) => updateRoute(r)}
           onNewFolder={() => setIsNewFolderOpen(true)}
           onUploadFiles={() => fileInputRef.current?.click()}
+          onUploadPhotos={() => mediaInputRef.current?.click()}
           onUploadFolder={() => folderInputRef.current?.click()}
           usedBytes={usedBytes}
           isOpenMobile={isMobileSidebarOpen}
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
         />
 
-        {/* Main Panel with 16px right/bottom margin */}
-        <main className="flex-1 flex flex-col min-w-0 mr-0 sm:mr-4 mb-0 sm:mb-4 overflow-hidden">
+        {/* Main Panel with 16px right/bottom margin (plus mobile bottom padding for nav bar) */}
+        <main className="flex-1 flex flex-col min-w-0 mr-0 sm:mr-4 mb-0 sm:mb-4 pb-20 md:pb-0 overflow-hidden">
           {currentRoute === 'photos' ? (
             <TimelineGrid
               items={filteredViewItems}
@@ -988,9 +990,9 @@ export const App: React.FC = () => {
           )}
         </main>
 
-        {/* Details Panel (360px on right) */}
+        {/* Details Panel (360px on right on desktop, modal drawer on mobile) */}
         {isDetailsOpen && (
-          <div className="mr-4 mb-4">
+          <div className="fixed inset-0 z-50 md:relative md:inset-auto md:z-auto bg-black/40 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none flex justify-end md:mr-4 md:mb-4">
             <DriveDetailsPanel
               isOpen={isDetailsOpen}
               onClose={() => setIsDetailsOpen(false)}
@@ -1111,12 +1113,29 @@ export const App: React.FC = () => {
         onAction={snackbar.onAction}
       />
 
-      {/* 8. Hidden File & Folder Inputs */}
+      {/* 8. Off-Screen File Inputs (Must NOT be display:none for iOS Safari & Mobile WebKit support) */}
       <input
         ref={fileInputRef}
+        id="televault-file-input"
         type="file"
         multiple
-        className="hidden"
+        style={{ position: 'fixed', top: '-1000px', left: '-1000px', opacity: 0, width: '1px', height: '1px', pointerEvents: 'none' }}
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={(e) => {
+          if (e.target.files) handleDropFiles(e.target.files);
+          e.target.value = '';
+        }}
+      />
+      <input
+        ref={mediaInputRef}
+        id="televault-media-input"
+        type="file"
+        accept="image/*,video/*"
+        multiple
+        style={{ position: 'fixed', top: '-1000px', left: '-1000px', opacity: 0, width: '1px', height: '1px', pointerEvents: 'none' }}
+        tabIndex={-1}
+        aria-hidden="true"
         onChange={(e) => {
           if (e.target.files) handleDropFiles(e.target.files);
           e.target.value = '';
@@ -1124,12 +1143,15 @@ export const App: React.FC = () => {
       />
       <input
         ref={folderInputRef}
+        id="televault-folder-input"
         type="file"
         // @ts-ignore
         webkitdirectory="true"
         directory="true"
         multiple
-        className="hidden"
+        style={{ position: 'fixed', top: '-1000px', left: '-1000px', opacity: 0, width: '1px', height: '1px', pointerEvents: 'none' }}
+        tabIndex={-1}
+        aria-hidden="true"
         onChange={(e) => {
           if (e.target.files) handleDropFiles(e.target.files);
           e.target.value = '';

@@ -255,7 +255,11 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
       {/* 4. Main Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 space-y-7">
         {totalItemsCount === 0 ? (
-          <DriveEmptyState type={getEmptyType()} searchQuery={searchQuery} />
+          <DriveEmptyState
+            type={getEmptyType()}
+            searchQuery={searchQuery}
+            onUpload={onTriggerFileUpload}
+          />
         ) : isGridView ? (
           <div className="space-y-7">
             {/* Folders Section */}

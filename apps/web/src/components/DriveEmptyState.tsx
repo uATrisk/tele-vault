@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Icon } from './ui/Icon';
+
 export type EmptyStateType =
   | 'drive'
   | 'folder'
@@ -12,11 +14,13 @@ export type EmptyStateType =
 interface DriveEmptyStateProps {
   type: EmptyStateType;
   searchQuery?: string;
+  onUpload?: () => void;
 }
 
 export const DriveEmptyState: React.FC<DriveEmptyStateProps> = ({
   type,
-  searchQuery
+  searchQuery,
+  onUpload
 }) => {
   const renderIllustration = () => {
     switch (type) {
@@ -372,10 +376,20 @@ export const DriveEmptyState: React.FC<DriveEmptyStateProps> = ({
   const copy = getCopy();
 
   return (
-    <div className="flex flex-col items-center justify-center py-20 px-4 text-center select-none space-y-3">
+    <div className="flex flex-col items-center justify-center py-12 sm:py-20 px-4 text-center select-none space-y-3">
       {renderIllustration()}
       <h3 className="text-base font-semibold text-text-primary tracking-tight">{copy.title}</h3>
       <p className="text-xs text-text-secondary max-w-sm leading-normal">{copy.desc}</p>
+      {onUpload && (type === 'drive' || type === 'folder') && (
+        <button
+          type="button"
+          onClick={onUpload}
+          className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-accent text-white font-medium text-sm shadow-md hover:bg-accent/90 active:scale-95 transition-all cursor-pointer"
+        >
+          <Icon name="upload" size={18} />
+          <span>Upload files</span>
+        </button>
+      )}
     </div>
   );
 };

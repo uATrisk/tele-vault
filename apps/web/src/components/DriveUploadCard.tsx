@@ -40,7 +40,7 @@ export const DriveUploadCard: React.FC<DriveUploadCardProps> = ({
   return (
     <aside
       aria-label="Upload progress"
-      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100%-32px)] sm:w-96 bg-surface text-text-primary rounded-2xl shadow-2xl border border-divider/60 select-none overflow-hidden transition-all duration-200 animate-in slide-in-from-bottom-4"
+      className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-50 w-[calc(100%-32px)] sm:w-96 bg-surface text-text-primary rounded-2xl shadow-2xl border border-divider/60 select-none overflow-hidden transition-all duration-200 animate-in slide-in-from-bottom-4"
     >
       {/* Header (Floating bar with Google Drive styling) */}
       <div className="flex items-center justify-between h-12 px-4 bg-[#202124] text-white border-b border-white/10">

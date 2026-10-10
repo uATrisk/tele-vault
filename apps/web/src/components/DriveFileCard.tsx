@@ -81,6 +81,15 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
     { label: 'Move to trash', icon: 'trash', danger: true, onClick: onTrash, dividerAbove: true }
   ];
 
+  const handleClick = (e: React.MouseEvent) => {
+    const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 768);
+    if (isTouch && !isSelected && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      onOpen();
+    } else {
+      onSelect(e);
+    }
+  };
+
   return (
     <div
       role="button"
@@ -89,7 +98,7 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
       onDragStart={(e) => {
         e.dataTransfer.setData('application/json', JSON.stringify({ itemIds: [item.id] }));
       }}
-      onClick={onSelect}
+      onClick={handleClick}
       onDoubleClick={onOpen}
       onContextMenu={(e) => {
         e.preventDefault();
@@ -105,10 +114,10 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
       {/* 1. Top Header Row: File Icon / Checkbox, Name, Star, and ⋮ Menu */}
       <div className="flex items-center justify-between h-7 mb-2 gap-1.5 min-w-0">
         <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
-          {/* Checkbox: smooth fade in on hover or when selected */}
+          {/* Checkbox: visible on mobile or when selected/hovered */}
           <div
             className={`transition-opacity duration-150 shrink-0 ${
-              isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              isSelected ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
             }`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -147,7 +156,7 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
             setIsMenuOpen(true);
           }}
           className={`p-1 rounded-full text-text-secondary hover:text-text-primary hover:bg-black/10 dark:hover:bg-white/10 transition-opacity shrink-0 ${
-            isMenuOpen || isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+            isMenuOpen || isSelected ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
           }`}
         >
           <Icon name="more_vert" size={18} />

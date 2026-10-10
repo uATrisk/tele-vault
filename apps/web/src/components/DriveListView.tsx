@@ -108,7 +108,14 @@ export const DriveListView: React.FC<DriveListViewProps> = ({
                 key={item.id}
                 role="row"
                 tabIndex={0}
-                onClick={(e) => onToggleSelect(item.id, e)}
+                onClick={(e) => {
+                  const isTouch = typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth < 768);
+                  if (isTouch && selectedIds.size === 0 && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+                    onOpenItem(item);
+                  } else {
+                    onToggleSelect(item.id, e);
+                  }
+                }}
                 onDoubleClick={() => onOpenItem(item)}
                 className={`group h-12 cursor-pointer transition-colors ${
                   isSelected
@@ -124,7 +131,7 @@ export const DriveListView: React.FC<DriveListViewProps> = ({
                     onToggleSelect(item.id);
                   }}
                 >
-                  <div className={`transition-opacity ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                  <div className={`transition-opacity ${isSelected ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'}`}>
                     <Checkbox
                       checked={isSelected}
                       onChange={() => onToggleSelect(item.id)}

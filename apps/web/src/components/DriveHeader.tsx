@@ -134,13 +134,13 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
       {/* Right: Settings, Lock, and Account Avatar */}
       <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 justify-end">
         <Tooltip text="Settings">
-          <IconButton aria-label="Settings" onClick={onOpenSettings}>
+          <IconButton aria-label="Settings" onClick={onOpenSettings} className="hidden sm:inline-flex">
             <Icon name="settings" size={20} />
           </IconButton>
         </Tooltip>
 
         <Tooltip text="Lock vault">
-          <IconButton aria-label="Lock vault" onClick={onLock}>
+          <IconButton aria-label="Lock vault" onClick={onLock} className="hidden sm:inline-flex">
             <Icon name="lock" size={20} />
           </IconButton>
         </Tooltip>
