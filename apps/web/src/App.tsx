@@ -1184,6 +1184,8 @@ export const App: React.FC = () => {
             onVaultUpdated={(newHeader) => {
               setHeader(newHeader);
             }}
+            theme={theme}
+            onSetTheme={setTheme}
           />
         </React.Suspense>
       )}
