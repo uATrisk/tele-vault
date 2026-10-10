@@ -3,6 +3,7 @@ import { unlockVault, unlockVaultWithRecoveryKey, VaultHeader } from '@televault
 import { idb } from '../db';
 import { Icon } from './ui/Icon';
 import { Button } from './ui/Button';
+import { BrandLogo } from './ui/BrandLogo';
 
 interface UnlockScreenProps {
   header: VaultHeader;
@@ -67,12 +68,8 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
   return (
     <div className="min-h-screen bg-page flex flex-col justify-center items-center px-4 select-none">
       <div className="max-w-md w-full bg-surface border border-divider/40 rounded-dialog p-8 shadow-dialog animate-in zoom-in-95 duration-150">
-        <div className="flex justify-center mb-4">
-          <svg className="w-14 h-14 shrink-0 transition-transform duration-300 hover:scale-105" viewBox="0 0 24 24" fill="none">
-            <path d="M8.4 3.5h7.2l6.4 11H14.8L8.4 3.5z" fill="#FFBA00"/>
-            <path d="M2 14.5l3.6-6.3 6.4 11H4.4L2 14.5z" fill="#00AC47"/>
-            <path d="M15.6 19.2H4.4l3.6-6.3h11.2l-3.6 6.3z" fill="#2684FC"/>
-          </svg>
+        <div className="flex justify-center mb-5">
+          <BrandLogo size={56} className="transition-transform duration-300 hover:scale-105" />
         </div>
 
         <h1 className="text-2xl font-medium text-center text-text-primary mb-1 tracking-tight">Unlock TeleVault</h1>

@@ -3,6 +3,7 @@ import { Icon } from './ui/Icon';
 import { IconButton } from './ui/IconButton';
 import { Tooltip } from './ui/Tooltip';
 import { Menu, MenuItemProps } from './ui/Menu';
+import { BrandLogo } from './ui/BrandLogo';
 
 interface DriveHeaderProps {
   searchQuery: string;
@@ -103,11 +104,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
           className="flex items-center gap-2.5 cursor-pointer select-none group"
           onClick={() => (window.location.hash = '#/drive')}
         >
-          <svg className="w-8 h-8 shrink-0 transition-transform duration-200 group-hover:scale-105" viewBox="0 0 24 24" fill="none">
-            <path d="M8.4 3.5h7.2l6.4 11H14.8L8.4 3.5z" fill="#FFBA00"/>
-            <path d="M2 14.5l3.6-6.3 6.4 11H4.4L2 14.5z" fill="#00AC47"/>
-            <path d="M15.6 19.2H4.4l3.6-6.3h11.2l-3.6 6.3z" fill="#2684FC"/>
-          </svg>
+          <BrandLogo size={30} className="transition-transform duration-200 group-hover:scale-105" />
           <span className="text-[22px] font-normal tracking-tight text-[#444746] dark:text-[#E3E3E3] hidden sm:inline">
             TeleVault
           </span>

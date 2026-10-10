@@ -1,0 +1,28 @@
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tv-hex-top" x1="16" y1="3" x2="16" y2="15" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="tv-hex-right" x1="17" y1="16" x2="27" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0284C7" />
+      <stop offset="100%" stop-color="#0F52BA" />
+    </linearGradient>
+    <linearGradient id="tv-hex-left" x1="5" y1="16" x2="15" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60A5FA" />
+      <stop offset="100%" stop-color="#1D4ED8" />
+    </linearGradient>
+    <linearGradient id="tv-hex-core" x1="14" y1="13" x2="18" y2="19" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#BAE6FD" />
+    </linearGradient>
+  </defs>
+  <path d="M16 3.2L26.6 9.32L16.6 15.1L6 9.32L16 3.2Z" fill="url(#tv-hex-top)" />
+  <path d="M16 5.8L23.8 10.3L16.4 14.57L8.6 10.3L16 5.8Z" fill="#FFFFFF" fill-opacity="0.25" />
+  <path d="M16.8 16.2L27.2 10.2V22.2L16.8 28.2V16.2Z" fill="url(#tv-hex-right)" />
+  <path d="M18.8 17.5L25.2 12V21.1L18.8 24.8V17.5Z" fill="#000000" fill-opacity="0.18" />
+  <path d="M4.8 10.2L15.2 16.2V28.2L4.8 22.2V10.2Z" fill="url(#tv-hex-left)" />
+  <path d="M6.8 12L13.2 17.5V24.8L6.8 21.1V12Z" fill="#FFFFFF" fill-opacity="0.16" />
+  <polygon points="16,13.2 18.4,14.6 18.4,17.4 16,18.8 13.6,17.4 13.6,14.6" fill="url(#tv-hex-core)" />
+  <circle cx="16" cy="16" r="1.1" fill="#0F52BA" />
+</svg>
