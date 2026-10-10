@@ -5,8 +5,8 @@ import path from 'node:path';
 const require = createRequire(import.meta.url);
 const { DatabaseSync } = require('node:sqlite');
 
-export function createMockD1Database(): D1Database {
-  const db = new DatabaseSync(':memory:');
+export function createMockD1Database(dbPath = ':memory:'): D1Database {
+  const db = new DatabaseSync(dbPath);
 
   // Load and apply migrations
   const migrationPath = path.resolve(__dirname, '../migrations/0000_init.sql');

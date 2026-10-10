@@ -34,9 +34,11 @@ ENVIRONMENT=dev
 `;
 
   const devVarsPath = path.join(process.cwd(), '.dev.vars');
+  const workerDevVarsPath = path.join(process.cwd(), 'apps/worker/.dev.vars');
   fs.writeFileSync(devVarsPath, devVarsContent, { mode: 0o600 });
+  fs.writeFileSync(workerDevVarsPath, devVarsContent, { mode: 0o600 });
 
-  console.log('\n✅ Created .dev.vars for local development.');
+  console.log('\n✅ Created .dev.vars and apps/worker/.dev.vars.');
   console.log('\n======================================================');
   console.log('🔑 YOUR WEB ACCESS TOKEN (SAVE IN PASSWORD MANAGER):');
   console.log(`   ${accessToken}`);

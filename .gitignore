@@ -19,3 +19,4 @@ scripts/*.js
 scripts/*.d.ts
 .DS_Store
 Thumbs.db
+*.sqlite*

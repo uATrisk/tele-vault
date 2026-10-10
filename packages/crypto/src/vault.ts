@@ -32,7 +32,8 @@ export interface CreateVaultResult {
  */
 export async function createVault(
   passphrase: string,
-  iterations = 600_000
+  iterations = 600_000,
+  customRecoveryKey?: Uint8Array
 ): Promise<CreateVaultResult> {
   const rawMK = randomBytes(32);
   const salt = randomBytes(16);
@@ -48,7 +49,7 @@ export async function createVault(
   const wrappedMK = new Uint8Array(wrappedMKBuffer);
 
   // 2. Recovery key wrapper
-  const rawRK = randomBytes(32);
+  const rawRK = customRecoveryKey || randomBytes(32);
   const rkIv = randomBytes(12);
   const rkKek = await deriveRecoveryKEK(rawRK);
   const wrappedMKRkBuffer = await crypto.subtle.encrypt(
