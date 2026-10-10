@@ -2,9 +2,10 @@
 
 ## Status Overview
 
-- **Current Phase:** Phase 2 (Crypto package)
+- **Current Phase:** Phase 3 (Mock Telegram and Worker)
 - **Phase 0 Status:** Completed (All Section 6 platform facts verified, documented in `docs/DECISIONS.md`)
 - **Phase 1 Status:** Completed (Scaffolding, docs/HUMAN_SETUP.md, CI-style test:all green)
+- **Phase 2 Status:** Completed (Pure WebCrypto, Layer A test suite 100% green, property tests, KAT tests)
 - **Last Updated:** 2026-10-10
 
 ---
@@ -31,15 +32,15 @@
   - [x] Configure TypeScript, ESLint, Prettier
   - [x] Configure `test:all` skeleton
   - [x] Verify clean baseline build and lint
-- [ ] **Phase 2: Crypto package (`packages/crypto`)**
-  - [ ] Pure WebCrypto implementation (SubtleCrypto only)
-  - [ ] Key derivation (MK, KEK via PBKDF2 ≥ 600,000 iter, RK via HKDF)
-  - [ ] Vault header encryption and re-wrapping
-  - [ ] Subkey derivation (`manifest`, `thumb`, `snapshot`, `file/<fileId>`)
-  - [ ] Chunk encryption/decryption with chunk binding AAD
-  - [ ] Manifest and thumbnail encryption/decryption
-  - [ ] Snapshot container format packing and unpacking
-  - [ ] Layer A tests: roundtrips, tampered data, wrong keys, Unicode NFKC, property tests
+- [x] **Phase 2: Crypto package (`packages/crypto`)**
+  - [x] Pure WebCrypto implementation (SubtleCrypto only)
+  - [x] Key derivation (MK, KEK via PBKDF2 ≥ 600,000 iter, RK via HKDF)
+  - [x] Vault header encryption and re-wrapping
+  - [x] Subkey derivation (`manifest`, `thumb`, `snapshot`, `file/<fileId>`)
+  - [x] Chunk encryption/decryption with chunk binding AAD
+  - [x] Manifest and thumbnail encryption/decryption
+  - [x] Snapshot container format packing and unpacking
+  - [x] Layer A tests: roundtrips, tampered data, wrong keys, Unicode NFKC, property tests, KAT tests
 - [ ] **Phase 3: Mock Telegram and Worker (`tools/mock-telegram`, `apps/worker`)**
   - [ ] Implement Mock Telegram HTTP server with fault injection (429, 500, disconnect)
   - [ ] Implement D1 database schema and migrations

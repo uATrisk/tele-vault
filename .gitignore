@@ -13,5 +13,8 @@ blob-report/
 .env.*
 !.env.example
 *.log
+*.tsbuildinfo
+scripts/*.js
+scripts/*.d.ts
 .DS_Store
 Thumbs.db

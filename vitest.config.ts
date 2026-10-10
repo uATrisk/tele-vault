@@ -6,6 +6,7 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.test.ts', '**/*.test.tsx'],
     exclude: ['**/node_modules/**', '**/dist/**', 'tests/e2e/**'],
-    passWithNoTests: true
+    passWithNoTests: true,
+    pool: 'forks'
   }
 });
