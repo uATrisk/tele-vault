@@ -22,24 +22,30 @@ app.use('*', async (c, next) => {
   res.headers.set('X-Content-Type-Options', 'nosniff');
   res.headers.set('Referrer-Policy', 'no-referrer');
   res.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.headers.set('X-Frame-Options', 'DENY');
+  res.headers.set('X-XSS-Protection', '0');
 
-  // CSP: No third-party domains, same-origin only (S5, S6)
+  // CSP: Strict same-origin only, frame-ancestors none, no third-party scripts (S5, S6)
   res.headers.set(
     'Content-Security-Policy',
     "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none';"
   );
 
   if (c.env.ENVIRONMENT !== 'dev') {
-    res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
 
   // API responses must default to no-store unless explicitly cached
   if (c.req.path.startsWith('/api') && !res.headers.has('Cache-Control')) {
-    res.headers.set('Cache-Control', 'no-store');
+    res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+    res.headers.set('Pragma', 'no-cache');
   }
 });
 
-// 2. Public Endpoints
+// 2. Auth Gate & API Rate Limiting Middleware (gates all /api/* routes)
+app.use('/api/*', authMiddleware);
+
+// 3. Public Endpoints (exempted in authMiddleware)
 app.get('/api/health', (c) => c.json({ ok: true }));
 
 app.post('/api/auth/login', async (c) => {
@@ -74,9 +80,6 @@ app.post('/api/auth/logout', (c) => {
   return c.json({ ok: true });
 });
 
-// 3. Protected Endpoints (Auth Gate Middleware)
-app.use('/api/*', authMiddleware);
-
 // --- Vault Header Routes ---
 app.get('/api/vault', async (c) => {
   const row = await c.env.DB.prepare('SELECT header, rev, created_at FROM vault WHERE id = 1').first<{
@@ -99,11 +102,14 @@ app.get('/api/vault', async (c) => {
 
 app.put('/api/vault', async (c) => {
   const body = (await c.req.json().catch(() => ({}))) as { header?: any };
-  if (!body.header) {
+  if (!body.header || typeof body.header !== 'object') {
     return c.json({ ok: false, error: 'Vault header is required' }, 400);
   }
 
   const headerStr = JSON.stringify(body.header);
+  if (headerStr.length > 32768) {
+    return c.json({ ok: false, error: 'Vault header exceeds maximum allowed size' }, 400);
+  }
   const now = Date.now();
 
   try {
@@ -125,11 +131,14 @@ app.put('/api/vault', async (c) => {
 
 app.post('/api/vault/rewrap', async (c) => {
   const body = (await c.req.json().catch(() => ({}))) as { header?: any; expectedRev?: number };
-  if (!body.header || typeof body.expectedRev !== 'number') {
+  if (!body.header || typeof body.header !== 'object' || typeof body.expectedRev !== 'number') {
     return c.json({ ok: false, error: 'header and expectedRev are required' }, 400);
   }
 
   const headerStr = JSON.stringify(body.header);
+  if (headerStr.length > 32768) {
+    return c.json({ ok: false, error: 'Vault header exceeds maximum allowed size' }, 400);
+  }
   const newRev = body.expectedRev + 1;
 
   const res = await c.env.DB.prepare(
@@ -189,6 +198,9 @@ app.post('/api/chunks', async (c) => {
 
 app.get('/api/chunks/:fileId', async (c) => {
   const fileId = c.req.param('fileId');
+  if (!fileId || typeof fileId !== 'string' || fileId.length > 128) {
+    return c.json({ ok: false, error: 'Invalid fileId parameter' }, 400);
+  }
   const tg = new TelegramClient(c.env);
 
   try {
@@ -268,7 +280,16 @@ app.post('/api/items', async (c) => {
     uploadId?: string;
   };
 
-  if (!body.id || !body.manifest || !Array.isArray(body.chunks)) {
+  if (
+    !body.id ||
+    typeof body.id !== 'string' ||
+    body.id.length > 64 ||
+    !body.manifest ||
+    typeof body.manifest !== 'string' ||
+    body.manifest.length > 131072 ||
+    !Array.isArray(body.chunks) ||
+    body.chunks.length > 2000
+  ) {
     return c.json({ ok: false, error: 'Invalid commit payload' }, 400);
   }
 
@@ -316,12 +337,21 @@ app.post('/api/items', async (c) => {
 
 app.put('/api/items/:id', async (c) => {
   const id = c.req.param('id');
+  if (!id || typeof id !== 'string' || id.length > 64) {
+    return c.json({ ok: false, error: 'Invalid item ID' }, 400);
+  }
+
   const body = (await c.req.json().catch(() => ({}))) as {
     manifest: string;
     expectedRev: number;
   };
 
-  if (!body.manifest || typeof body.expectedRev !== 'number') {
+  if (
+    !body.manifest ||
+    typeof body.manifest !== 'string' ||
+    body.manifest.length > 131072 ||
+    typeof body.expectedRev !== 'number'
+  ) {
     return c.json({ ok: false, error: 'manifest and expectedRev are required' }, 400);
   }
 
@@ -346,6 +376,9 @@ app.put('/api/items/:id', async (c) => {
 
 app.delete('/api/items/:id', async (c) => {
   const id = c.req.param('id');
+  if (!id || typeof id !== 'string' || id.length > 64) {
+    return c.json({ ok: false, error: 'Invalid item ID' }, 400);
+  }
   const tg = new TelegramClient(c.env);
 
   // 1. Fetch chunks to delete Telegram messages

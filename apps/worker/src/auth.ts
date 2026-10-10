@@ -10,6 +10,30 @@ const COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
 // In-memory / per-isolate rate limiter for login failures
 const loginFailures = new Map<string, { count: number; resetAt: number }>();
 
+// General API request rate limiter (max 300 requests per 60 seconds per IP)
+const apiRequests = new Map<string, { count: number; resetAt: number }>();
+
+export function checkGeneralRateLimit(ip: string, maxRequests = 300): { allowed: boolean; retryAfter?: number } {
+  const now = Date.now();
+  const entry = apiRequests.get(ip);
+
+  if (entry) {
+    if (now > entry.resetAt) {
+      apiRequests.set(ip, { count: 1, resetAt: now + 60 * 1000 });
+      return { allowed: true };
+    }
+    entry.count++;
+    if (entry.count > maxRequests) {
+      const retryAfterSec = Math.ceil((entry.resetAt - now) / 1000);
+      return { allowed: false, retryAfter: retryAfterSec };
+    }
+    return { allowed: true };
+  }
+
+  apiRequests.set(ip, { count: 1, resetAt: now + 60 * 1000 });
+  return { allowed: true };
+}
+
 /**
  * Constant-time comparison of two strings using HMAC-SHA256 digests.
  */
@@ -100,7 +124,7 @@ export function resetLoginFailure(ip: string) {
 }
 
 /**
- * Middleware: Enforces authentication on all protected routes.
+ * Middleware: Enforces authentication and rate limiting on all protected routes.
  */
 export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, next) => {
   const path = c.req.path;
@@ -110,6 +134,31 @@ export const authMiddleware: MiddlewareHandler<{ Bindings: Env }> = async (c, ne
     return next();
   }
 
+  // 1. General API Rate Limiting per IP
+  const ip = c.req.header('cf-connecting-ip') || c.req.header('x-forwarded-for') || '127.0.0.1';
+  const rateLimit = checkGeneralRateLimit(ip);
+  if (!rateLimit.allowed) {
+    return c.json(
+      { ok: false, error: `Too many requests. Please slow down and retry in ${rateLimit.retryAfter}s.` },
+      429
+    );
+  }
+
+  // 2. Strict Origin verification for state-changing requests (CSRF Defense-in-Depth)
+  const origin = c.req.header('origin');
+  if (origin && ['POST', 'PUT', 'DELETE', 'PATCH'].includes(c.req.method)) {
+    try {
+      const originHost = new URL(origin).host;
+      const reqHost = c.req.header('host');
+      if (reqHost && originHost !== reqHost && c.env.ENVIRONMENT !== 'dev') {
+        return c.json({ ok: false, error: 'Forbidden: cross-origin request rejected' }, 403);
+      }
+    } catch {
+      return c.json({ ok: false, error: 'Forbidden: invalid origin header' }, 403);
+    }
+  }
+
+  // 3. Session Cookie Authentication
   const sessionCookie = getCookie(c, SESSION_COOKIE_NAME);
   if (!sessionCookie) {
     return c.json({ ok: false, error: 'Unauthorized: missing session' }, 401);
