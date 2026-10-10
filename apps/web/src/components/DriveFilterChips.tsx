@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { Chip } from './ui/Chip';
 import { Menu, MenuItemProps } from './ui/Menu';
+import { Icon } from './ui/Icon';
 
 export type FilterCategory = 'all' | 'images' | 'videos' | 'pdfs' | 'docs' | 'audio' | 'archives' | 'folders';
 export type FilterModified = 'all' | 'today' | '7days' | '30days' | 'this_year';
@@ -20,9 +21,8 @@ export const DriveFilterChips: React.FC<DriveFilterChipsProps> = ({
 }) => {
   const [isTypeMenuOpen, setIsTypeMenuOpen] = useState(false);
   const [isModMenuOpen, setIsModMenuOpen] = useState(false);
-
-  const typeBtnRef = useRef<HTMLDivElement>(null);
-  const modBtnRef = useRef<HTMLDivElement>(null);
+  const [typeAnchor, setTypeAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [modAnchor, setModAnchor] = useState<{ x: number; y: number } | null>(null);
 
   const typeLabels: Record<FilterCategory, string> = {
     all: 'Type',
@@ -60,51 +60,77 @@ export const DriveFilterChips: React.FC<DriveFilterChipsProps> = ({
     { label: 'This year', onClick: () => onModifiedFilterChange('this_year') }
   ];
 
+  const hasActiveFilters = categoryFilter !== 'all' || modifiedFilter !== 'all';
+
   return (
     <div className="flex items-center gap-2 px-4 py-2 select-none shrink-0 border-b border-divider/20 overflow-x-auto">
       {/* Type Chip */}
-      <div ref={typeBtnRef}>
+      <div>
         <Chip
           label={typeLabels[categoryFilter]}
           active={categoryFilter !== 'all'}
-          onClick={() => setIsTypeMenuOpen(true)}
+          onClick={(e: any) => {
+            const target = e?.currentTarget as HTMLElement | undefined;
+            if (target) {
+              const rect = target.getBoundingClientRect();
+              setTypeAnchor({ x: rect.left, y: rect.bottom + 4 });
+            }
+            setIsTypeMenuOpen(true);
+          }}
           onClear={() => onCategoryFilterChange('all')}
         />
       </div>
 
       {/* Modified Chip */}
-      <div ref={modBtnRef}>
+      <div>
         <Chip
           label={modLabels[modifiedFilter]}
           active={modifiedFilter !== 'all'}
-          onClick={() => setIsModMenuOpen(true)}
+          onClick={(e: any) => {
+            const target = e?.currentTarget as HTMLElement | undefined;
+            if (target) {
+              const rect = target.getBoundingClientRect();
+              setModAnchor({ x: rect.left, y: rect.bottom + 4 });
+            }
+            setIsModMenuOpen(true);
+          }}
           onClear={() => onModifiedFilterChange('all')}
         />
       </div>
 
+      {/* Quick Reset All Filters Button */}
+      {hasActiveFilters && (
+        <button
+          type="button"
+          onClick={() => {
+            onCategoryFilterChange('all');
+            onModifiedFilterChange('all');
+          }}
+          className="h-8 px-2.5 rounded-lg text-xs font-medium text-accent hover:bg-accent/10 transition-colors flex items-center gap-1 shrink-0 focus:outline-none"
+          title="Reset all filters"
+        >
+          <Icon name="close" size={13} />
+          <span>Reset filters</span>
+        </button>
+      )}
+
       {/* Type Dropdown */}
-      {isTypeMenuOpen && typeBtnRef.current && (
+      {isTypeMenuOpen && (
         <Menu
           items={typeMenuItems}
           isOpen={isTypeMenuOpen}
           onClose={() => setIsTypeMenuOpen(false)}
-          anchorPoint={{
-            x: typeBtnRef.current.getBoundingClientRect().left,
-            y: typeBtnRef.current.getBoundingClientRect().bottom + 4
-          }}
+          anchorPoint={typeAnchor}
         />
       )}
 
       {/* Modified Dropdown */}
-      {isModMenuOpen && modBtnRef.current && (
+      {isModMenuOpen && (
         <Menu
           items={modMenuItems}
           isOpen={isModMenuOpen}
           onClose={() => setIsModMenuOpen(false)}
-          anchorPoint={{
-            x: modBtnRef.current.getBoundingClientRect().left,
-            y: modBtnRef.current.getBoundingClientRect().bottom + 4
-          }}
+          anchorPoint={modAnchor}
         />
       )}
     </div>

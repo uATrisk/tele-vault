@@ -346,8 +346,10 @@ export const DriveEmptyState: React.FC<DriveEmptyStateProps> = ({
         };
       case 'search':
         return {
-          title: `No results found for "${searchQuery || ''}"`,
-          desc: 'Check your spelling or try different keywords'
+          title: searchQuery ? `No results found for "${searchQuery}"` : 'No matching files found',
+          desc: searchQuery
+            ? 'Check your spelling or try different keywords'
+            : 'Try adjusting or clearing your filters to see more files'
         };
       case 'recent':
         return {

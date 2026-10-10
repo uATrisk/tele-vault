@@ -234,9 +234,11 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
   const selectedCount = selectedIds.size;
   const selectedItems = allItems.filter((i) => selectedIds.has(i.id));
 
+  const isFiltering = Boolean(searchQuery.trim() || categoryFilter !== 'all' || modifiedFilter !== 'all');
+
   // Determine empty state type
   const getEmptyType = () => {
-    if (searchQuery.trim()) return 'search';
+    if (isFiltering) return 'search';
     if (currentRoute === 'starred') return 'starred';
     if (currentRoute === 'trash') return 'trash';
     if (currentRoute === 'recent') return 'recent';
@@ -283,7 +285,7 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
           onRename={selectedCount === 1 ? () => onRenameItem(selectedItems[0]) : undefined}
           onOpenDetails={onToggleDetails}
         />
-      ) : currentRoute === 'drive' ? (
+      ) : currentRoute === 'drive' && !isFiltering ? (
         <DriveBreadcrumbRow
           breadcrumbs={breadcrumbs}
           currentFolder={currentFolder}
@@ -302,7 +304,11 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
       ) : (
         <div className="flex items-center justify-between h-12 px-4 border-b border-divider/30 shrink-0">
           <h2 className="text-lg font-medium text-text-primary capitalize">
-            {searchQuery.trim() ? `Search results for "${searchQuery}"` : currentRoute}
+            {searchQuery.trim()
+              ? `Search results for "${searchQuery}"`
+              : isFiltering
+              ? 'Filtered results'
+              : currentRoute}
           </h2>
           <div className="flex items-center gap-1">
             <div className="flex items-center p-0.5 rounded-full bg-card border border-divider/30">

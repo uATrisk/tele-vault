@@ -4,10 +4,15 @@ import { IconButton } from './ui/IconButton';
 import { Tooltip } from './ui/Tooltip';
 import { Menu, MenuItemProps } from './ui/Menu';
 import { BrandLogo } from './ui/BrandLogo';
+import { FilterCategory, FilterModified } from './DriveFilterChips';
 
 interface DriveHeaderProps {
   searchQuery: string;
   onSearchChange: (q: string) => void;
+  categoryFilter?: FilterCategory;
+  onCategoryFilterChange?: (cat: FilterCategory) => void;
+  modifiedFilter?: FilterModified;
+  onModifiedFilterChange?: (mod: FilterModified) => void;
   onOpenSettings: () => void;
   onLock: () => void;
   onLogout: () => void;
@@ -19,6 +24,10 @@ interface DriveHeaderProps {
 export const DriveHeader: React.FC<DriveHeaderProps> = ({
   searchQuery,
   onSearchChange,
+  categoryFilter = 'all',
+  onCategoryFilterChange,
+  modifiedFilter = 'all',
+  onModifiedFilterChange,
   onOpenSettings,
   onLock,
   onLogout,
@@ -27,8 +36,10 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
   onToggleSidebar
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const [accountMenuAnchor, setAccountMenuAnchor] = useState<{ x: number; y: number } | null>(null);
+  const [isSearchOptionsOpen, setIsSearchOptionsOpen] = useState(false);
 
   // Keyboard shortcut '/' focuses search box
   useEffect(() => {
@@ -46,6 +57,26 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Close search options popover when clicking outside
+  useEffect(() => {
+    if (!isSearchOptionsOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSearchOptionsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isSearchOptionsOpen]);
+
+  const hasActiveFilters = categoryFilter !== 'all' || modifiedFilter !== 'all' || Boolean(searchQuery.trim());
+
+  const handleResetFilters = () => {
+    onCategoryFilterChange?.('all');
+    onModifiedFilterChange?.('all');
+    onSearchChange('');
+  };
+
   const accountMenuItems: MenuItemProps[] = [
     {
       label: 'Settings',
@@ -54,7 +85,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
     },
     {
       label: `Theme: ${currentTheme.charAt(0).toUpperCase() + currentTheme.slice(1)}`,
-      icon: 'tune',
+      icon: currentTheme === 'dark' ? 'dark_mode' : currentTheme === 'light' ? 'light_mode' : 'brightness_medium',
       onClick: () => {
         const nextTheme =
           currentTheme === 'light' ? 'dark' : currentTheme === 'dark' ? 'system' : 'light';
@@ -69,14 +100,14 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
     },
     {
       label: 'Log out',
-      icon: 'close',
+      icon: 'logout',
       danger: true,
       onClick: onLogout
     }
   ];
 
   return (
-    <header className="h-16 px-4 flex items-center justify-between gap-4 bg-page select-none shrink-0 border-b border-divider/20 sm:border-none">
+    <header className="h-16 px-4 flex items-center justify-between gap-4 bg-page select-none shrink-0 border-b border-divider/20 sm:border-none relative z-30">
       {/* Left: Hamburger (mobile), Google Drive-styled logo + TeleVault wordmark */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 sm:min-w-[240px] shrink-0">
         {onToggleSidebar && (
@@ -93,7 +124,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
           className="flex items-center gap-2.5 cursor-pointer select-none group"
           onClick={() => (window.location.hash = '#/drive')}
         >
-          <BrandLogo size={30} className="transition-transform duration-200 group-hover:scale-105" />
+          <BrandLogo size={32} className="transition-transform duration-200 group-hover:scale-105" />
           <span className="text-[22px] font-normal tracking-tight text-[#444746] dark:text-[#E3E3E3] hidden sm:inline">
             TeleVault
           </span>
@@ -101,7 +132,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
       </div>
 
       {/* Center: Google Drive Search Pill */}
-      <div className="flex-1 max-w-[720px] min-w-[120px]">
+      <div ref={searchContainerRef} className="flex-1 max-w-[720px] min-w-[120px] relative">
         <div className="relative flex items-center w-full h-12 rounded-full bg-[#E9EEF6] dark:bg-[#282A2C] focus-within:bg-white dark:focus-within:bg-[#1E1F20] focus-within:shadow-[0_1px_3px_0_rgba(60,64,67,0.3),0_4px_8px_3px_rgba(60,64,67,0.15)] transition-all duration-200 ease-out px-4">
           <Icon name="search" size={20} className="text-[#444746] dark:text-[#C4C7C5] shrink-0 mr-3" />
           <input
@@ -112,23 +143,141 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
             placeholder="Search in Drive"
             className="w-full bg-transparent text-[15px] text-text-primary placeholder:text-text-secondary/70 focus:outline-none"
           />
-          {searchQuery ? (
+
+          {searchQuery && (
             <IconButton
               size="sm"
               aria-label="Clear search"
               onClick={() => onSearchChange('')}
-              className="text-text-secondary hover:text-text-primary shrink-0 ml-1"
+              className="text-text-secondary hover:text-text-primary shrink-0 mr-1"
             >
               <Icon name="close" size={18} />
             </IconButton>
-          ) : (
-            <Tooltip text="Search options">
-              <IconButton size="sm" aria-label="Search filters" className="text-text-secondary hover:text-text-primary shrink-0 ml-1">
-                <Icon name="tune" size={18} />
-              </IconButton>
-            </Tooltip>
           )}
+
+          <Tooltip text="Search options">
+            <IconButton
+              size="sm"
+              aria-label="Search filters"
+              onClick={() => setIsSearchOptionsOpen((prev) => !prev)}
+              className={`shrink-0 ml-1 transition-colors ${
+                categoryFilter !== 'all' || modifiedFilter !== 'all'
+                  ? 'text-accent bg-accent/15 hover:bg-accent/25'
+                  : 'text-text-secondary hover:text-text-primary'
+              }`}
+            >
+              <Icon name="tune" size={18} />
+            </IconButton>
+          </Tooltip>
         </div>
+
+        {/* Google Drive-style Search Options Popover */}
+        {isSearchOptionsOpen && (
+          <div className="absolute top-full left-0 right-0 mt-2 p-5 bg-surface rounded-2xl shadow-dialog border border-divider/40 text-text-primary text-sm z-50 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-divider/30 mb-4">
+              <span className="font-semibold text-text-primary">Search options</span>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={handleResetFilters}
+                  className="text-xs text-accent hover:underline font-medium"
+                >
+                  Reset all
+                </button>
+              )}
+            </div>
+
+            {/* Type Filter */}
+            <div className="space-y-2 mb-4">
+              <label className="block text-xs font-medium text-text-secondary">Type</label>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { id: 'all' as FilterCategory, label: 'Any type' },
+                  { id: 'images' as FilterCategory, label: 'Photos & images' },
+                  { id: 'videos' as FilterCategory, label: 'Videos' },
+                  { id: 'pdfs' as FilterCategory, label: 'PDFs' },
+                  { id: 'docs' as FilterCategory, label: 'Documents' },
+                  { id: 'audio' as FilterCategory, label: 'Audio' },
+                  { id: 'archives' as FilterCategory, label: 'Archives' },
+                  { id: 'folders' as FilterCategory, label: 'Folders' }
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => onCategoryFilterChange?.(t.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      categoryFilter === t.id
+                        ? 'bg-selected text-text-on-selected font-semibold shadow-xs'
+                        : 'bg-card text-text-secondary hover:bg-hover hover:text-text-primary'
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Date Modified Filter */}
+            <div className="space-y-2 mb-4">
+              <label className="block text-xs font-medium text-text-secondary">Date modified</label>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { id: 'all' as FilterModified, label: 'Any time' },
+                  { id: 'today' as FilterModified, label: 'Today' },
+                  { id: '7days' as FilterModified, label: 'Last 7 days' },
+                  { id: '30days' as FilterModified, label: 'Last 30 days' },
+                  { id: 'this_year' as FilterModified, label: 'This year' }
+                ].map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    onClick={() => onModifiedFilterChange?.(m.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      modifiedFilter === m.id
+                        ? 'bg-selected text-text-on-selected font-semibold shadow-xs'
+                        : 'bg-card text-text-secondary hover:bg-hover hover:text-text-primary'
+                    }`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Words / Item name */}
+            <div className="space-y-1.5 mb-5">
+              <label className="block text-xs font-medium text-text-secondary">Item name contains</label>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder="Search by name or extension"
+                className="w-full bg-card border border-divider/40 rounded-lg px-3 py-2 text-xs text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-divider/30">
+              <button
+                type="button"
+                onClick={() => setIsSearchOptionsOpen(false)}
+                className="px-4 py-2 rounded-lg text-xs font-medium text-text-secondary hover:bg-hover hover:text-text-primary"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSearchOptionsOpen(false);
+                  searchInputRef.current?.focus();
+                }}
+                className="px-5 py-2 rounded-lg text-xs font-semibold bg-accent text-white hover:opacity-90 shadow-sm"
+              >
+                Apply Filters
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Right: Settings, Lock, and Account Avatar */}

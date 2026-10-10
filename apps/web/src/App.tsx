@@ -401,8 +401,9 @@ export const App: React.FC = () => {
         // Photos view shows all images and videos regardless of folder
         result = result.filter((i) => i.kind !== 'folder' && (i.mime.startsWith('image/') || i.mime.startsWith('video/')));
       } else if (currentRoute === 'drive') {
-        // Only items in current folder unless searching
-        if (!searchQuery.trim()) {
+        // Only items in current folder unless searching or filtering
+        const isFiltering = Boolean(searchQuery.trim() || categoryFilter !== 'all' || modifiedFilter !== 'all');
+        if (!isFiltering) {
           result = result.filter((i) => (i.parentId ?? null) === currentFolderId);
         }
       }
@@ -911,6 +912,10 @@ export const App: React.FC = () => {
           if (q.trim()) window.location.hash = `#/search?q=${encodeURIComponent(q.trim())}`;
           else if (currentRoute === 'drive') window.location.hash = currentFolderId ? `#/drive/${currentFolderId}` : '#/drive';
         }}
+        categoryFilter={categoryFilter}
+        onCategoryFilterChange={setCategoryFilter}
+        modifiedFilter={modifiedFilter}
+        onModifiedFilterChange={setModifiedFilter}
         onOpenSettings={() => setIsSettingsOpen(true)}
         onLock={handleLock}
         onLogout={handleLogout}

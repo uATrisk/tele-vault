@@ -20,79 +20,73 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       aria-label="TeleVault Logo"
     >
       <defs>
-        {/* Top Vault Facet: Sky to Azure Cyan */}
-        <linearGradient id="tv-hex-top" x1="16" y1="3" x2="16" y2="15" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#38BDF8" />
-          <stop offset="100%" stopColor="#0284C7" />
+        <linearGradient id="tv-grad-bg" x1="4" y1="4" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#29B6F6" />
+          <stop offset="55%" stopColor="#0288D1" />
+          <stop offset="100%" stopColor="#01579B" />
         </linearGradient>
-
-        {/* Right Vault Facet: Deep Azure to Sapphire */}
-        <linearGradient id="tv-hex-right" x1="17" y1="16" x2="27" y2="28" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#0284C7" />
-          <stop offset="100%" stopColor="#0F52BA" />
+        <linearGradient id="tv-grad-vault" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#E0F2FE" />
+          <stop offset="100%" stopColor="#7DD3FC" />
         </linearGradient>
-
-        {/* Left Vault Facet: Royal Blue to Cobalt */}
-        <linearGradient id="tv-hex-left" x1="5" y1="16" x2="15" y2="28" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#60A5FA" />
-          <stop offset="100%" stopColor="#1D4ED8" />
-        </linearGradient>
-
-        {/* Floating Core Gradient */}
-        <linearGradient id="tv-hex-core" x1="14" y1="13" x2="18" y2="19" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="100%" stopColor="#BAE6FD" />
-        </linearGradient>
-
-        {/* Ambient Drop Shadow for Floating Core */}
-        <filter id="tv-core-shadow" x="11" y="11" width="10" height="10" filterUnits="userSpaceOnUse">
-          <feDropShadow dx="0" dy="0.5" stdDeviation="0.8" floodColor="#0F172A" floodOpacity="0.4" />
+        <filter id="tv-plane-shadow" x="3" y="5" width="26" height="24" filterUnits="userSpaceOnUse">
+          <feDropShadow dx="0" dy="1.2" stdDeviation="1" floodColor="#01579B" floodOpacity="0.45" />
         </filter>
       </defs>
 
-      {/* 1. Top Interlocking Vault Plate */}
-      <path
-        d="M16 3.2L26.6 9.32L16.6 15.1L6 9.32L16 3.2Z"
-        fill="url(#tv-hex-top)"
-      />
-      {/* Top Plate Inner Architectural Bevel */}
-      <path
-        d="M16 5.8L23.8 10.3L16.4 14.57L8.6 10.3L16 5.8Z"
-        fill="#FFFFFF"
-        fillOpacity="0.22"
+      {/* Outer Vault Circular Base */}
+      <circle cx="16" cy="16" r="14.5" fill="url(#tv-grad-bg)" />
+
+      {/* Vault Combination Dial Ticks (Perimeter) */}
+      <circle
+        cx="16"
+        cy="16"
+        r="13.2"
+        stroke="url(#tv-grad-vault)"
+        strokeWidth="0.9"
+        strokeDasharray="1.2 2.25"
+        strokeOpacity="0.45"
       />
 
-      {/* 2. Right Interlocking Vault Plate */}
-      <path
-        d="M16.8 16.2L27.2 10.2V22.2L16.8 28.2V16.2Z"
-        fill="url(#tv-hex-right)"
-      />
-      {/* Right Plate Inner Shadowed Bevel */}
-      <path
-        d="M18.8 17.5L25.2 12V21.1L18.8 24.8V17.5Z"
-        fill="#000000"
-        fillOpacity="0.18"
+      {/* Inner Vault Chamber Rim */}
+      <circle
+        cx="16"
+        cy="16"
+        r="11.4"
+        stroke="#FFFFFF"
+        strokeWidth="0.6"
+        strokeOpacity="0.25"
       />
 
-      {/* 3. Left Interlocking Vault Plate */}
-      <path
-        d="M4.8 10.2L15.2 16.2V28.2L4.8 22.2V10.2Z"
-        fill="url(#tv-hex-left)"
-      />
-      {/* Left Plate Inner Ambient Bevel */}
-      <path
-        d="M6.8 12L13.2 17.5V24.8L6.8 21.1V12Z"
-        fill="#FFFFFF"
-        fillOpacity="0.14"
-      />
+      {/* 4 Vault Locking Bolt Studs (N, S, E, W) */}
+      <circle cx="16" cy="2.8" r="0.8" fill="#FFFFFF" fillOpacity="0.85" />
+      <circle cx="16" cy="29.2" r="0.8" fill="#FFFFFF" fillOpacity="0.85" />
+      <circle cx="2.8" cy="16" r="0.8" fill="#FFFFFF" fillOpacity="0.85" />
+      <circle cx="29.2" cy="16" r="0.8" fill="#FFFFFF" fillOpacity="0.85" />
 
-      {/* 4. Central Cryptographic Core / Floating Hexagonal Node */}
-      <g filter="url(#tv-core-shadow)">
-        <polygon
-          points="16,13.2 18.4,14.6 18.4,17.4 16,18.8 13.6,17.4 13.6,14.6"
-          fill="url(#tv-hex-core)"
+      {/* 4 Diagonal Micro Nodes (NE, NW, SE, SW) */}
+      <circle cx="6.67" cy="6.67" r="0.5" fill="#FFFFFF" fillOpacity="0.6" />
+      <circle cx="25.33" cy="6.67" r="0.5" fill="#FFFFFF" fillOpacity="0.6" />
+      <circle cx="6.67" cy="25.33" r="0.5" fill="#FFFFFF" fillOpacity="0.6" />
+      <circle cx="25.33" cy="25.33" r="0.5" fill="#FFFFFF" fillOpacity="0.6" />
+
+      {/* Telegram Paper Airplane with Vault Security Precision */}
+      <g transform="translate(-0.5, 0.4)" filter="url(#tv-plane-shadow)">
+        {/* Underside fold / shade */}
+        <path
+          d="M11.9 17.5L13.8 22.8c.25.7.65.8 1.15.35l2.45-2.35-5.5-3.3z"
+          fill="#B0D8F3"
         />
-        <circle cx="16" cy="16" r="1.1" fill="#0F52BA" />
+        {/* Rudder accent */}
+        <path
+          d="M14.2 19.3l-.45 3.5c.35 0 .55-.15.75-.35l2.05-1.95-2.35-1.2z"
+          fill="#D2E8F8"
+        />
+        {/* Main Wing / Fuselage */}
+        <path
+          d="M23.2 9.2L7.8 15.4c-1.05.42-1.05 1.05-.15 1.35l4.25 1.3 9.4-5.9c.45-.25.85-.1.5.2l-7.6 6.9 6.7 4.9c1.2.65 2.05.3 2.35-1.1l3.1-14.4c.4-1.6-.6-2.25-1.75-1.75z"
+          fill="#FFFFFF"
+        />
       </g>
     </svg>
   );
