@@ -23,21 +23,26 @@ export interface ChunkInfo {
   size: number; // ciphertext size
 }
 
+export type ItemKind = 'file' | 'folder';
+
 export interface ItemManifest {
-  v: 1;
+  v: 1 | 2;
   id: string; // hex (16 bytes)
+  kind?: ItemKind; // default 'file'
+  parentId?: string | null; // null or missing = root
   name: string;
   mime: string;
-  size: number; // plaintext total size
-  sha256: string; // hex plaintext SHA-256
+  size: number; // plaintext total size (0 for folders)
+  sha256: string; // hex plaintext SHA-256 ("" for folders)
   chunkSize: number; // typically 16777216 (16 MiB)
-  chunks: ChunkInfo[];
+  chunks: ChunkInfo[]; // empty [] for folders
   takenAt: string | null; // ISO 8601
   uploadedAt: string; // ISO 8601
   width: number | null;
   height: number | null;
   durationMs: number | null;
-  favorite: boolean;
+  favorite?: boolean;
+  starred?: boolean;
   trashed: boolean;
   albumIds: string[];
 }

@@ -261,14 +261,14 @@ app.post('/api/items', async (c) => {
   const body = (await c.req.json().catch(() => ({}))) as {
     id: string;
     manifest: string; // hex
-    thumb: string; // hex
+    thumb?: string; // hex (optional for folders / zero-chunk items)
     chunks: Array<{ idx: number; messageId: number; fileId: string; size: number }>;
     sizeBytes: number;
     chunkCount: number;
     uploadId?: string;
   };
 
-  if (!body.id || !body.manifest || !body.thumb || !body.chunks) {
+  if (!body.id || !body.manifest || !Array.isArray(body.chunks)) {
     return c.json({ ok: false, error: 'Invalid commit payload' }, 400);
   }
 
@@ -283,12 +283,17 @@ app.post('/api/items', async (c) => {
   const statements: D1PreparedStatement[] = [
     c.env.DB.prepare(
       'INSERT OR REPLACE INTO items (id, seq, rev, manifest, size_bytes, chunk_count, created_at) VALUES (?, ?, 1, ?, ?, ?, ?)'
-    ).bind(body.id, newSeq, body.manifest, body.sizeBytes, body.chunkCount, now),
-    c.env.DB.prepare('INSERT OR REPLACE INTO thumbs (item_id, bytes) VALUES (?, ?)').bind(
-      body.id,
-      body.thumb
-    )
+    ).bind(body.id, newSeq, body.manifest, body.sizeBytes ?? 0, body.chunkCount ?? body.chunks.length, now)
   ];
+
+  if (body.thumb) {
+    statements.push(
+      c.env.DB.prepare('INSERT OR REPLACE INTO thumbs (item_id, bytes) VALUES (?, ?)').bind(
+        body.id,
+        body.thumb
+      )
+    );
+  }
 
   for (const ch of body.chunks) {
     statements.push(

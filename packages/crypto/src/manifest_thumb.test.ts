@@ -30,7 +30,10 @@ describe('Item Manifest & Thumbnail Crypto', () => {
     width: 4032,
     height: 3024,
     durationMs: null,
+    kind: 'file',
+    parentId: null,
     favorite: false,
+    starred: false,
     trashed: false,
     albumIds: []
   };
@@ -78,5 +81,83 @@ describe('Item Manifest & Thumbnail Crypto', () => {
     await expect(decryptThumbnail(key, dummyItemId, blob)).rejects.toThrow(
       /Failed to decrypt thumbnail/
     );
+  });
+
+  it('correctly loads and normalizes legacy v1 manifests', async () => {
+    const key = await generateTestKey();
+    const rev = 1;
+    // Old v1 raw JSON without kind, parentId, or starred
+    const legacyV1Json = {
+      v: 1,
+      id: 'aabbccddeeff00112233445566778899',
+      name: 'legacy_photo.jpg',
+      mime: 'image/jpeg',
+      size: 1024,
+      sha256: 'abc123',
+      chunkSize: 16777216,
+      chunks: [],
+      takenAt: null,
+      uploadedAt: '2026-10-10T12:00:00Z',
+      width: null,
+      height: null,
+      durationMs: null,
+      favorite: true,
+      trashed: false,
+      albumIds: []
+    };
+
+    // Encrypt raw legacy JSON
+    const jsonStr = JSON.stringify(legacyV1Json);
+    const plaintext = new TextEncoder().encode(jsonStr);
+    const iv = randomBytes(12);
+    const { buildManifestAAD } = await import('./manifest');
+    const aad = buildManifestAAD(dummyItemId, rev);
+    const ciphertextBuf = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv as BufferSource, additionalData: aad as BufferSource },
+      key,
+      plaintext
+    );
+    const blob = new Uint8Array(12 + ciphertextBuf.byteLength);
+    blob.set(iv, 0);
+    blob.set(new Uint8Array(ciphertextBuf), 12);
+
+    const decrypted = await decryptManifest(key, dummyItemId, rev, blob);
+    expect(decrypted.kind).toBe('file');
+    expect(decrypted.parentId).toBeNull();
+    expect(decrypted.starred).toBe(true);
+    expect(decrypted.favorite).toBe(true);
+  });
+
+  it('encrypts and decrypts v2 folder manifests with 0 chunks', async () => {
+    const key = await generateTestKey();
+    const rev = 1;
+    const folderManifest: ItemManifest = {
+      v: 2,
+      id: 'aabbccddeeff00112233445566778899',
+      kind: 'folder',
+      parentId: null,
+      name: 'Trip 2026',
+      mime: 'application/x-directory',
+      size: 0,
+      sha256: '',
+      chunkSize: 0,
+      chunks: [],
+      takenAt: null,
+      uploadedAt: new Date().toISOString(),
+      width: null,
+      height: null,
+      durationMs: null,
+      starred: false,
+      favorite: false,
+      trashed: false,
+      albumIds: []
+    };
+
+    const blob = await encryptManifest(key, dummyItemId, rev, folderManifest);
+    const decrypted = await decryptManifest(key, dummyItemId, rev, blob);
+    expect(decrypted.kind).toBe('folder');
+    expect(decrypted.name).toBe('Trip 2026');
+    expect(decrypted.chunks).toHaveLength(0);
+    expect(decrypted.parentId).toBeNull();
   });
 });

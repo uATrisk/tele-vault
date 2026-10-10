@@ -55,3 +55,24 @@ This document records platform verification results, architectural choices, alte
 - **Choice:** `@tanstack/react-virtual`.
 - **Alternatives Considered:** `react-window`, custom virtual scroller.
 - **Reason:** Headless, highly performant, handles 50,000+ items smoothly with dynamic item sizes.
+
+---
+
+## 3. UI v2 Redesign Decisions (Google Drive Architecture)
+
+### Decision 7: Design Tokens & CSS Variables
+- **Choice:** Semantic CSS variables (`--bg-page`, `--bg-surface`, `--bg-search`, `--bg-card`, `--bg-selected`, `--bg-hover`, `--text-primary`, `--text-secondary`, `--text-on-selected`, `--divider`, `--accent`, `--danger`) supporting Light (default), Dark, and System modes.
+- **Reason:** Direct alignment with Google Drive web aesthetic; smooth theme transitions without layout re-renders.
+
+### Decision 8: Bundled Typography & Material Icon System
+- **Choice:** Self-hosted `@fontsource/roboto` font with zero external network requests; custom typed Material Design SVG icon system (`components/ui/Icon.tsx`) based on standard Apache-2.0 Material Symbols.
+- **Reason:** Full compliance with Security Rule S5 (zero 3rd-party requests, no CDN dependencies), tight bundle size, and crisp rendering at all pixel densities.
+
+### Decision 9: Hash-Based Client Routing
+- **Choice:** Hash-based routing (`#/drive`, `#/drive/<folderId>`, `#/photos`, `#/recent`, `#/starred`, `#/trash`, `#/search?q=`).
+- **Reason:** Works seamlessly on static asset hosting without requiring server-side fallback rules or leaking unencrypted folder names to URL bars. File and folder IDs are opaque random hex strings.
+
+### Decision 10: Manifest Schema Evolution (v1 to v2 Backward Compatibility)
+- **Choice:** ItemManifest schema bumps to version 2 (`v: 2`) with optional `kind: 'file' | 'folder'`, `parentId: string | null`, and `starred` (aliased to existing `favorite`). Reader transparently defaults missing `kind` to `'file'` and missing `parentId` to `null` (root).
+- **Reason:** Guaranteed non-destructive compatibility with existing production vaults while unlocking full hierarchical file-tree operations.
+

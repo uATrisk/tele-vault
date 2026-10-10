@@ -161,21 +161,22 @@ All API endpoints except `GET /api/health` and `POST /api/auth/login` require au
 
 #### `POST /api/items`
 - **Auth:** Required
-- **Purpose:** Commits an uploaded item once all chunks have succeeded.
+- **Purpose:** Commits an uploaded item once all chunks have succeeded, or commits a folder item (zero chunks).
 - **Request Body:**
   ```json
   {
     "id": "16-byte-hex",
     "manifest": "hex-encoded-ciphertext",
-    "thumb": "hex-encoded-ciphertext",
+    "thumb": "hex-encoded-ciphertext (optional for folders or non-visual files)",
     "chunks": [
       { "idx": 0, "messageId": 1234, "fileId": "BAACAg...", "size": 16777244 }
     ],
     "sizeBytes": 16777216,
     "chunkCount": 1,
-    "uploadId": "upload-session-id"
+    "uploadId": "upload-session-id (optional)"
   }
   ```
+  *Note:* For folders, `chunks` is empty `[]`, `thumb` is omitted, and `sizeBytes` / `chunkCount` are 0.
 - **Response:** `200 OK` `{ "ok": true, "seq": 3 }`
 
 #### `PUT /api/items/:id`

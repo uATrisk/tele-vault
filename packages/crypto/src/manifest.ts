@@ -60,7 +60,12 @@ export async function decryptManifest(
       toBufferSource(ciphertextWithTag)
     );
     const jsonStr = new TextDecoder().decode(plaintextBuf);
-    return JSON.parse(jsonStr) as ItemManifest;
+    const parsed = JSON.parse(jsonStr) as ItemManifest;
+    if (!parsed.kind) parsed.kind = 'file';
+    if (parsed.parentId === undefined) parsed.parentId = null;
+    if (parsed.starred === undefined) parsed.starred = parsed.favorite ?? false;
+    if (parsed.favorite === undefined) parsed.favorite = parsed.starred ?? false;
+    return parsed;
   } catch (err) {
     throw new Error('Failed to decrypt manifest: data corrupted or AAD binding mismatch');
   }

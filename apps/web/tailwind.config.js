@@ -5,14 +5,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        vault: {
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#22c55e',
-          600: '#16a34a',
-          900: '#14532d',
-          950: '#052e16'
-        }
+        page: 'var(--bg-page)',
+        surface: 'var(--bg-surface)',
+        search: 'var(--bg-search)',
+        card: 'var(--bg-card)',
+        selected: 'var(--bg-selected)',
+        hover: 'var(--bg-hover)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-on-selected': 'var(--text-on-selected)',
+        divider: 'var(--divider)',
+        accent: 'var(--accent)',
+        danger: 'var(--danger)'
+      },
+      borderRadius: {
+        panel: '16px',
+        card: '12px',
+        dialog: '28px'
+      },
+      boxShadow: {
+        menu: 'var(--shadow-menu)',
+        dialog: 'var(--shadow-dialog)',
+        card: 'var(--shadow-card)'
       }
     }
   },

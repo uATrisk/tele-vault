@@ -16,16 +16,20 @@ import {
 import { api } from '../api';
 import { idb, UploadJobRecord } from '../db';
 import { processMediaFile } from './media';
+import { getUniqueName } from '../utils/folderTree';
 
 export interface UploadQueueItem {
   id: string; // uploadId
   file: File;
   name: string;
+  parentId?: string | null;
   size: number;
   progress: number; // 0 to 100
   bytesUploaded: number;
+  totalChunks?: number;
+  uploadedChunks?: number;
   speed: number; // bytes/sec
-  status: 'queued' | 'processing' | 'uploading' | 'paused' | 'done' | 'error';
+  status: 'queued' | 'processing' | 'uploading' | 'paused' | 'done' | 'error' | 'skipped';
   error?: string;
   isDuplicate?: boolean;
 }
@@ -67,14 +71,24 @@ export class UploadManager {
     }
   }
 
-  public enqueueFiles(files: FileList | File[]) {
+  public enqueueFiles(
+    files: FileList | File[],
+    parentId: string | null = null,
+    existingNames: string[] = []
+  ) {
     const fileArray = Array.from(files);
+    const currentNames = [...existingNames];
+
     for (const file of fileArray) {
       const uploadId = `up_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      const uniqueName = getUniqueName(currentNames, file.name);
+      currentNames.push(uniqueName);
+
       this.queue.push({
         id: uploadId,
         file,
-        name: file.name,
+        name: uniqueName,
+        parentId,
         size: file.size,
         progress: 0,
         bytesUploaded: 0,
@@ -148,7 +162,7 @@ export class UploadManager {
     // 1. Calculate SHA-256 for deduplication
     const hash = await this.calculateFileSha256(file);
     if (this.existingHashes.has(hash)) {
-      item.status = 'done';
+      item.status = 'skipped';
       item.progress = 100;
       item.isDuplicate = true;
       this.notify();
@@ -256,15 +270,19 @@ export class UploadManager {
       }
 
       item.bytesUploaded = confirmedChunks.length * chunkSize;
+      item.totalChunks = totalChunks;
+      item.uploadedChunks = confirmedChunks.length;
       item.progress = Math.min(99, Math.round((confirmedChunks.length / totalChunks) * 100));
       this.notify();
     }
 
     // 6. Encrypt Manifest & Thumbnail
     const manifest: ItemManifest = {
-      v: 1,
+      v: 2,
       id: jobRecord.itemId,
-      name: file.name,
+      kind: 'file',
+      parentId: item.parentId ?? null,
+      name: item.name,
       mime: file.type || 'application/octet-stream',
       size: file.size,
       sha256: hash,
@@ -280,6 +298,7 @@ export class UploadManager {
       height: mediaMeta.height,
       durationMs: mediaMeta.durationMs,
       favorite: false,
+      starred: false,
       trashed: false,
       albumIds: []
     };

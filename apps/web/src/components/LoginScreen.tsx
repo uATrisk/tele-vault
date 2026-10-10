@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Shield, KeyRound, AlertCircle, ArrowRight } from 'lucide-react';
 import { api } from '../api';
+import { Icon } from './ui/Icon';
+import { Button } from './ui/Button';
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -8,6 +9,7 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [token, setToken] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -33,65 +35,61 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 flex flex-col justify-center items-center px-4">
-      <div className="max-w-md w-full bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
-        <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-inner">
-            <Shield className="w-8 h-8" />
+    <div className="min-h-screen bg-page flex flex-col justify-center items-center px-4 select-none">
+      <div className="max-w-md w-full bg-surface border border-divider/40 rounded-dialog p-8 shadow-dialog animate-in zoom-in-95 duration-150">
+        <div className="flex justify-center mb-4">
+          <div className="w-14 h-14 rounded-2xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shadow-inner">
+            <Icon name="shield" size={28} />
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold text-center text-white mb-2">TeleVault</h1>
-        <p className="text-gray-400 text-center text-sm mb-8">
-          Enter your private Access Token to connect to your encrypted storage.
+        <h1 className="text-2xl font-medium text-center text-text-primary mb-2 tracking-tight">TeleVault</h1>
+        <p className="text-text-secondary text-center text-sm mb-6">
+          Enter your private Access Password to connect to your encrypted storage.
         </p>
 
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3 text-red-400 text-sm">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+          <div className="mb-6 p-4 rounded-xl bg-danger/10 border border-danger/20 flex items-start gap-3 text-danger text-sm">
+            <Icon name="error" size={20} className="shrink-0 mt-0.5" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2">
-              Access Token
+            <label className="block text-xs font-medium text-text-secondary mb-1.5">
+              Access Password
             </label>
             <div className="relative">
-              <KeyRound className="w-5 h-5 text-gray-500 absolute left-3.5 top-3.5" />
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={token}
                 onChange={(e) => setToken(e.target.value)}
-                placeholder="tv_..."
+                placeholder="Enter your access password"
                 required
-                className="w-full bg-gray-950 border border-gray-800 rounded-xl pl-11 pr-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 text-sm transition"
+                className="w-full bg-surface border border-divider rounded-xl pl-4 pr-11 py-3 text-text-primary placeholder:text-text-secondary/50 focus:outline-none focus:ring-2 focus:ring-accent text-sm transition"
               />
+              <button
+                type="button"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+              >
+                <Icon name={showPassword ? 'visibility_off' : 'visibility'} size={20} />
+              </button>
             </div>
           </div>
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="lg"
             disabled={loading || !token.trim()}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-medium py-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-950 cursor-pointer"
+            className="w-full mt-2"
           >
-            {loading ? (
-              <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <span>Authenticate</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
+            {loading ? 'Connecting...' : 'Connect to Vault'}
+          </Button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-gray-800/80 text-center">
-          <p className="text-xs text-gray-500">
-            Self-hosted &amp; Zero-knowledge. Token is generated via <code className="text-gray-400">npm run setup</code>.
-          </p>
-        </div>
       </div>
     </div>
   );

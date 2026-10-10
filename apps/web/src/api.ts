@@ -128,7 +128,7 @@ export const api = {
   async commitItem(payload: {
     id: string;
     manifest: string;
-    thumb: string;
+    thumb?: string;
     chunks: Array<{ idx: number; messageId: number; fileId: string; size: number }>;
     sizeBytes: number;
     chunkCount: number;

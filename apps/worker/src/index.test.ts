@@ -256,6 +256,30 @@ describe('Cloudflare Worker & Telegram Proxy (Layer B Tests)', () => {
     expect(retryCommitRes.status).toBe(200);
   });
 
+  it('commits zero-chunk item (folder) with no thumbnail successfully', async () => {
+    const folderPayload = {
+      id: 'folder_01',
+      manifest: 'folder_manifest_cipher_hex',
+      chunks: [],
+      sizeBytes: 0,
+      chunkCount: 0
+    };
+
+    const res = await worker.fetch(makeRequest('/api/items', 'POST', folderPayload), env);
+    expect(res.status).toBe(200);
+    const data = (await res.json()) as any;
+    expect(data.seq).toBeGreaterThan(0);
+
+    // Verify item in DB has 0 chunks
+    const itemRow = await db.prepare('SELECT * FROM items WHERE id = ?').bind('folder_01').first<any>();
+    expect(itemRow).toBeTruthy();
+    expect(itemRow.chunk_count).toBe(0);
+
+    // Verify no thumbnail was inserted
+    const thumbRow = await db.prepare('SELECT * FROM thumbs WHERE item_id = ?').bind('folder_01').first<any>();
+    expect(thumbRow).toBeNull();
+  });
+
   it('updates item manifest with optimistic concurrency and returns 409 on conflict', async () => {
     // Commit initial item
     await worker.fetch(
