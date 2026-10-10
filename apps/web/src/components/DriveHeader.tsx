@@ -14,7 +14,6 @@ interface DriveHeaderProps {
   currentTheme: 'light' | 'dark' | 'system';
   onThemeChange: (theme: 'light' | 'dark' | 'system') => void;
   onToggleSidebar?: () => void;
-  onOpenShowcase?: () => void;
 }
 
 export const DriveHeader: React.FC<DriveHeaderProps> = ({
@@ -25,8 +24,7 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
   onLogout,
   currentTheme,
   onThemeChange,
-  onToggleSidebar,
-  onOpenShowcase
+  onToggleSidebar
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
@@ -63,15 +61,6 @@ export const DriveHeader: React.FC<DriveHeaderProps> = ({
         onThemeChange(nextTheme);
       }
     },
-    ...(onOpenShowcase
-      ? [
-          {
-            label: 'Design System Showcase',
-            icon: 'help' as const,
-            onClick: onOpenShowcase
-          }
-        ]
-      : []),
     {
       label: 'Lock Vault',
       icon: 'lock',

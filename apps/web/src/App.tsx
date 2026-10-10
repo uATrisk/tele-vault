@@ -916,7 +916,6 @@ export const App: React.FC = () => {
         currentTheme={theme}
         onThemeChange={setTheme}
         onToggleSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-        onOpenShowcase={() => setIsShowcaseOpen(true)}
       />
 
       {/* 2. Middle Body: Sidebar + Main Panel + Details Panel */}
