@@ -4,12 +4,15 @@ import { Icon } from './ui/Icon';
 import { Checkbox } from './ui/Checkbox';
 import { getFileTypeMeta } from '../utils/fileType';
 import { formatBytes, formatDriveDate } from '../utils/folderTree';
+import { UploadQueueItem } from '../upload/uploader';
 
 export type SortField = 'name' | 'modified' | 'size';
 export type SortOrder = 'asc' | 'desc';
 
 interface DriveListViewProps {
   items: ItemManifest[];
+  uploadingItems?: UploadQueueItem[];
+  onCancelUpload?: (id: string) => void;
   selectedIds: Set<string>;
   onToggleSelect: (id: string, e?: React.MouseEvent) => void;
   onSelectAll: () => void;
@@ -26,6 +29,8 @@ interface DriveListViewProps {
 
 export const DriveListView: React.FC<DriveListViewProps> = ({
   items,
+  uploadingItems,
+  onCancelUpload,
   selectedIds,
   onToggleSelect,
   onSelectAll,
@@ -98,6 +103,56 @@ export const DriveListView: React.FC<DriveListViewProps> = ({
 
         {/* Table Body */}
         <tbody className="divide-y divide-divider/30">
+          {uploadingItems &&
+            uploadingItems.map((u) => {
+              const meta = getFileTypeMeta(u.file.type, 'file', u.file.name);
+              return (
+                <tr key={u.id} className="h-12 bg-accent/[0.04] text-text-primary animate-in fade-in duration-150">
+                  <td className="px-3 py-2 text-center">
+                    <Icon name="upload" size={16} className="text-accent animate-pulse mx-auto" />
+                  </td>
+                  <td className="px-4 py-2 font-medium">
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                      <Icon name={meta.icon} size={18} className={`${meta.color} shrink-0`} />
+                      <span className="truncate max-w-[220px]" title={u.name}>
+                        {u.name}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-accent/15 text-accent shrink-0">
+                        {u.subStatus === 'encrypting' ? 'Encrypting...' : `Uploading ${u.progress}%`}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-2 text-text-secondary text-xs hidden sm:table-cell">
+                    {u.subStatus === 'encrypting'
+                      ? 'Client AES-256-GCM encryption'
+                      : 'Streaming chunks to Telegram'}
+                  </td>
+                  <td className="px-4 py-2 text-text-secondary text-xs hidden md:table-cell">
+                    <div className="flex flex-col gap-1 w-24">
+                      <span className="font-mono text-[11px]">{formatBytes(u.bytesUploaded)}</span>
+                      <div className="w-full h-1 bg-divider/40 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-accent rounded-full transition-all duration-150"
+                          style={{ width: `${Math.max(5, u.progress)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    {onCancelUpload && (
+                      <button
+                        type="button"
+                        onClick={() => onCancelUpload(u.id)}
+                        className="p-1 rounded-full text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors"
+                        title="Cancel upload"
+                      >
+                        <Icon name="close" size={16} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           {items.map((item) => {
             const isSelected = selectedIds.has(item.id);
             const meta = getFileTypeMeta(item.mime, item.kind, item.name);

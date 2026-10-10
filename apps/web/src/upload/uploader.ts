@@ -30,6 +30,7 @@ export interface UploadQueueItem {
   uploadedChunks?: number;
   speed: number; // bytes/sec
   status: 'queued' | 'processing' | 'uploading' | 'paused' | 'done' | 'error' | 'skipped';
+  subStatus?: 'hashing' | 'encrypting' | 'uploading' | 'finalizing' | 'done' | 'error';
   error?: string;
   isDuplicate?: boolean;
 }
@@ -44,6 +45,8 @@ export class UploadManager {
   private masterKey: CryptoKey | null = null;
   private existingHashes: Set<string> = new Set();
   private onItemCommittedCallback?: (manifest: ItemManifest) => void;
+  private notifyTimeout: any = null;
+  private lastNotifyTime = 0;
 
   constructor() {}
 
@@ -68,6 +71,24 @@ export class UploadManager {
   private notify() {
     for (const listener of this.listeners) {
       listener([...this.queue]);
+    }
+  }
+
+  private throttledNotify(immediate = false) {
+    const now = Date.now();
+    if (immediate || now - this.lastNotifyTime > 60) {
+      if (this.notifyTimeout) {
+        clearTimeout(this.notifyTimeout);
+        this.notifyTimeout = null;
+      }
+      this.lastNotifyTime = now;
+      this.notify();
+    } else if (!this.notifyTimeout) {
+      this.notifyTimeout = setTimeout(() => {
+        this.notifyTimeout = null;
+        this.lastNotifyTime = Date.now();
+        this.notify();
+      }, 60);
     }
   }
 
@@ -160,16 +181,24 @@ export class UploadManager {
     const mk = this.masterKey!;
 
     // 1. Calculate SHA-256 for deduplication
+    item.status = 'processing';
+    item.subStatus = 'hashing';
+    this.throttledNotify(true);
+
     const hash = await this.calculateFileSha256(file);
     if (this.existingHashes.has(hash)) {
       item.status = 'skipped';
+      item.subStatus = 'done';
       item.progress = 100;
+      item.bytesUploaded = file.size;
       item.isDuplicate = true;
-      this.notify();
+      this.throttledNotify(true);
       return;
     }
 
     // 2. Extract metadata & generate thumbnail
+    item.subStatus = 'encrypting';
+    this.throttledNotify();
     const mediaMeta = await processMediaFile(file);
 
     // 3. Generate IDs and subkeys
@@ -209,11 +238,14 @@ export class UploadManager {
     }
 
     item.status = 'uploading';
-    this.notify();
+    item.subStatus = 'uploading';
+    item.totalChunks = totalChunks;
+    item.uploadedChunks = jobRecord.confirmedChunks.length;
+    this.throttledNotify(true);
 
     const confirmedChunks = [...jobRecord.confirmedChunks];
     let startTime = Date.now();
-    let bytesSentSinceStart = 0;
+    let bytesSentSinceStart = confirmedChunks.reduce((acc, c) => acc + (c.size || chunkSize), 0);
 
     // 5. Upload chunks sequentially or with small concurrency
     for (let i = 0; i < totalChunks; i++) {
@@ -236,6 +268,8 @@ export class UploadManager {
       const plaintextChunk = new Uint8Array(sliceBuf);
 
       // Encrypt chunk
+      item.subStatus = 'encrypting';
+      this.throttledNotify();
       const encryptedChunk = await encryptChunk(
         fileKey,
         hexToBytes(jobRecord.fileIdHex),
@@ -245,10 +279,22 @@ export class UploadManager {
       );
 
       // Upload to Worker -> Telegram
+      item.subStatus = 'uploading';
+      this.throttledNotify();
       const chunkUploadRes = await api.uploadChunk(
         jobRecord.id,
         i,
-        encryptedChunk
+        encryptedChunk,
+        (chunkLoaded) => {
+          const totalSent = bytesSentSinceStart + chunkLoaded;
+          item.bytesUploaded = Math.min(file.size, totalSent);
+          item.progress = Math.min(99, Math.round((item.bytesUploaded / file.size) * 100));
+          const elapsedSec = (Date.now() - startTime) / 1000;
+          if (elapsedSec > 0.4) {
+            item.speed = Math.round(item.bytesUploaded / elapsedSec);
+          }
+          this.throttledNotify();
+        }
       );
 
       confirmedChunks.push({
@@ -265,18 +311,21 @@ export class UploadManager {
       // Update progress & speed
       bytesSentSinceStart += (end - start);
       const elapsedSec = (Date.now() - startTime) / 1000;
-      if (elapsedSec > 0.5) {
+      if (elapsedSec > 0.4) {
         item.speed = Math.round(bytesSentSinceStart / elapsedSec);
       }
 
-      item.bytesUploaded = confirmedChunks.length * chunkSize;
+      item.bytesUploaded = Math.min(file.size, bytesSentSinceStart);
       item.totalChunks = totalChunks;
       item.uploadedChunks = confirmedChunks.length;
       item.progress = Math.min(99, Math.round((confirmedChunks.length / totalChunks) * 100));
-      this.notify();
+      this.throttledNotify();
     }
 
     // 6. Encrypt Manifest & Thumbnail
+    item.subStatus = 'finalizing';
+    item.progress = 99;
+    this.throttledNotify(true);
     const manifest: ItemManifest = {
       v: 2,
       id: jobRecord.itemId,
@@ -334,9 +383,11 @@ export class UploadManager {
     await idb.setCachedThumb(jobRecord.itemId, mediaMeta.thumbnailBytes);
 
     item.status = 'done';
+    item.subStatus = 'done';
     item.progress = 100;
+    item.bytesUploaded = file.size;
     this.existingHashes.add(hash);
-    this.notify();
+    this.throttledNotify(true);
 
     if (this.onItemCommittedCallback) {
       this.onItemCommittedCallback(manifest);

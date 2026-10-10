@@ -92,8 +92,49 @@ export const api = {
   async uploadChunk(
     uploadId: string,
     chunkIndex: number,
-    chunkBlob: Blob | Uint8Array
+    chunkBlob: Blob | Uint8Array,
+    onProgress?: (loaded: number, total: number) => void
   ): Promise<{ ok: boolean; messageId: number; fileId: string; size: number }> {
+    if (typeof XMLHttpRequest !== 'undefined') {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/api/chunks');
+        xhr.setRequestHeader('X-Upload-Id', uploadId);
+        xhr.setRequestHeader('X-Chunk-Index', chunkIndex.toString());
+        xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+
+        if (onProgress && xhr.upload) {
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              onProgress(e.loaded, e.total);
+            }
+          };
+        }
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch {
+              resolve({ ok: true, messageId: 0, fileId: '', size: 0 });
+            }
+          } else {
+            try {
+              const err = JSON.parse(xhr.responseText);
+              reject(new Error(err.error || `HTTP ${xhr.status}`));
+            } catch {
+              reject(new Error(`Chunk upload failed (${xhr.status})`));
+            }
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error uploading chunk'));
+        xhr.onabort = () => reject(new Error('Upload aborted'));
+
+        xhr.send(chunkBlob as any);
+      });
+    }
+
     const res = await fetch('/api/chunks', {
       method: 'POST',
       headers: {

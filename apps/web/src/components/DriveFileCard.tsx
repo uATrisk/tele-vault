@@ -115,23 +115,23 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
           : 'bg-[#F0F4F9] dark:bg-[#1E1F20] border-transparent hover:bg-[#E9EEF6] dark:hover:bg-[#282A2C] hover:shadow-sm'
       }`}
     >
-      {/* 1. Top Header Row: File Icon / Checkbox, Name, Star, and ⋮ Menu */}
+      {/* Checkbox: absolute top-2.5 left-2.5 */}
+      <div
+        className={`absolute top-2.5 left-2.5 z-10 transition-all duration-150 ${
+          isSelected ? 'opacity-100 scale-100' : 'opacity-0 sm:group-hover:opacity-100 scale-90 sm:group-hover:scale-100'
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Checkbox
+          checked={isSelected}
+          onChange={() => onSelect({} as any)}
+          ariaLabel={`Select ${item.name}`}
+        />
+      </div>
+
+      {/* 1. Top Header Row: File Icon, Name, Star, and ⋮ Menu */}
       <div className="flex items-center justify-between h-7 mb-2 gap-1.5 min-w-0">
         <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
-          {/* Checkbox: visible on mobile or when selected/hovered */}
-          <div
-            className={`transition-opacity duration-150 shrink-0 ${
-              isSelected ? 'opacity-100' : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100'
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Checkbox
-              checked={isSelected}
-              onChange={() => onSelect({} as any)}
-              ariaLabel={`Select ${item.name}`}
-            />
-          </div>
-
           {/* File Type Icon */}
           <Icon name={meta.icon} size={18} className={`${meta.color} shrink-0`} />
 
@@ -173,7 +173,7 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
           e.stopPropagation();
           onOpen();
         }}
-        className="relative w-full aspect-[16/10] bg-white dark:bg-[#131314] rounded-xl overflow-hidden flex items-center justify-center border border-black/[0.04] dark:border-white/[0.04] shadow-[inset_0_0_0_1px_rgba(0,0,0,0.02)] cursor-pointer"
+        className="relative w-full aspect-[16/10] bg-[#F8FAFD] dark:bg-[#131314] rounded-xl overflow-hidden flex items-center justify-center border border-black/[0.06] dark:border-white/[0.06] shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)] cursor-pointer"
       >
         {thumbUrl ? (
           <img
@@ -182,11 +182,15 @@ export const DriveFileCard: React.FC<DriveFileCardProps> = ({
             loading="lazy"
             className="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
           />
+        ) : meta.previewable ? (
+          <div className="flex flex-col items-center justify-center p-3 w-full h-full bg-surface/50 animate-pulse">
+            <Icon name={meta.icon} size={28} className={`${meta.color} opacity-40`} />
+          </div>
         ) : (
           /* Realistic Document Preview Sheet */
           <div className="flex flex-col items-center justify-center p-3 w-full h-full">
-            <div className="w-16 h-20 bg-surface rounded shadow-sm border border-divider/40 flex flex-col items-center justify-center gap-1.5 p-2 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:shadow">
-              <Icon name={meta.icon} size={28} className={meta.color} />
+            <div className="w-16 h-20 bg-white dark:bg-[#202124] rounded-lg shadow-sm border border-divider/60 flex flex-col items-center justify-center gap-1.5 p-2 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:shadow">
+              <Icon name={meta.icon} size={26} className={meta.color} />
               <div className="w-8 h-1 bg-divider/60 rounded-full" />
               <div className="w-5 h-1 bg-divider/40 rounded-full" />
             </div>

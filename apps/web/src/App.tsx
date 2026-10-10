@@ -954,6 +954,8 @@ export const App: React.FC = () => {
               folders={viewFolders}
               files={viewFiles}
               allItems={items}
+              uploadQueue={uploadQueue}
+              onCancelUpload={(id) => uploadManager.cancel(id)}
               selectedIds={selectedIds}
               onToggleSelect={handleToggleSelect}
               onSelectAll={handleSelectAll}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ItemManifest } from '@televault/crypto';
 import { DriveBreadcrumbRow } from './DriveBreadcrumbRow';
 import { DriveSelectionToolbar } from './DriveSelectionToolbar';
@@ -10,6 +10,8 @@ import { DriveEmptyState } from './DriveEmptyState';
 import { NavRoute } from './DriveSidebar';
 import { Button } from './ui/Button';
 import { Icon } from './ui/Icon';
+import { UploadQueueItem } from '../upload/uploader';
+import { getFileTypeMeta } from '../utils/fileType';
 
 interface DriveMainViewProps {
   currentRoute: NavRoute;
@@ -18,6 +20,8 @@ interface DriveMainViewProps {
   folders: ItemManifest[];
   files: ItemManifest[];
   allItems: ItemManifest[];
+  uploadQueue?: UploadQueueItem[];
+  onCancelUpload?: (id: string) => void;
   selectedIds: Set<string>;
   onToggleSelect: (id: string, e?: React.MouseEvent) => void;
   onSelectAll: () => void;
@@ -48,6 +52,92 @@ interface DriveMainViewProps {
   searchQuery: string;
 }
 
+const DriveUploadingCard: React.FC<{
+  item: UploadQueueItem;
+  onCancel?: () => void;
+}> = ({ item, onCancel }) => {
+  const meta = getFileTypeMeta(item.file.type, 'file', item.file.name);
+  const [localUrl, setLocalUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (item.file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(item.file);
+      setLocalUrl(url);
+      return () => URL.revokeObjectURL(url);
+    }
+  }, [item.file]);
+
+  return (
+    <div className="relative flex flex-col p-3 rounded-2xl bg-[#F0F4F9]/90 dark:bg-[#1E1F20]/90 border border-accent/40 shadow-sm animate-in fade-in zoom-in-95 duration-200 select-none">
+      {/* 1. Header */}
+      <div className="flex items-center justify-between h-7 mb-2 gap-1.5 min-w-0">
+        <div className="flex items-center gap-2 overflow-hidden flex-1 min-w-0">
+          <Icon name={meta.icon} size={18} className={`${meta.color} shrink-0`} />
+          <span className="text-[13px] font-medium truncate tracking-tight text-text-primary" title={item.name}>
+            {item.name}
+          </span>
+        </div>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            aria-label="Cancel upload"
+            className="p-1 rounded-full text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
+            title="Cancel upload"
+          >
+            <Icon name="close" size={16} />
+          </button>
+        )}
+      </div>
+
+      {/* 2. Main Canvas */}
+      <div className="relative w-full aspect-[16/10] bg-[#F8FAFD] dark:bg-[#131314] rounded-xl overflow-hidden flex items-center justify-center border border-black/[0.06] dark:border-white/[0.06]">
+        {localUrl ? (
+          <img src={localUrl} alt={item.name} className="w-full h-full object-cover filter brightness-[0.7] blur-[1px]" />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-3 w-full h-full opacity-40">
+            <Icon name={meta.icon} size={28} className={meta.color} />
+          </div>
+        )}
+
+        {/* Floating Glassmorphic Progress Badge */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/40 backdrop-blur-[2px] text-white p-2 text-center">
+          <div className="w-9 h-9 relative flex items-center justify-center">
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="3.5" />
+              <circle
+                cx="18"
+                cy="18"
+                r="14"
+                fill="none"
+                stroke="#60A5FA"
+                strokeWidth="3.5"
+                strokeDasharray={87.96}
+                strokeDashoffset={87.96 - (87.96 * Math.max(5, item.progress)) / 100}
+                className="transition-all duration-150 ease-out"
+              />
+            </svg>
+            <span className="absolute text-[10px] font-mono font-bold tracking-tight">{item.progress}%</span>
+          </div>
+
+          <span className="text-[11px] font-medium tracking-tight text-white/95 drop-shadow-sm flex items-center gap-1">
+            {item.subStatus === 'encrypting' ? (
+              <>
+                <Icon name="lock" size={11} className="animate-spin text-blue-300" />
+                Encrypting...
+              </>
+            ) : item.subStatus === 'finalizing' ? (
+              'Finalizing...'
+            ) : (
+              'Uploading...'
+            )}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const DriveMainView: React.FC<DriveMainViewProps> = ({
   currentRoute,
   currentFolder,
@@ -55,6 +145,8 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
   folders,
   files,
   allItems,
+  uploadQueue,
+  onCancelUpload,
   selectedIds,
   onToggleSelect,
   onSelectAll,
@@ -132,6 +224,13 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
   const sortedFolders = [...folders].sort(sortComparator);
   const sortedFiles = [...files].sort(sortComparator);
   const totalItemsCount = folders.length + files.length;
+  const activeFolderUploads = (uploadQueue || []).filter(
+    (u) =>
+      (u.parentId ?? null) === (currentFolder?.id ?? null) &&
+      u.status !== 'done' &&
+      u.status !== 'skipped'
+  );
+  const hasContent = totalItemsCount > 0 || activeFolderUploads.length > 0;
   const selectedCount = selectedIds.size;
   const selectedItems = allItems.filter((i) => selectedIds.has(i.id));
 
@@ -254,7 +353,7 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
 
       {/* 4. Main Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 space-y-7">
-        {totalItemsCount === 0 ? (
+        {!hasContent ? (
           <DriveEmptyState
             type={getEmptyType()}
             searchQuery={searchQuery}
@@ -286,10 +385,18 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
             )}
 
             {/* Files Section */}
-            {sortedFiles.length > 0 && (
+            {(sortedFiles.length > 0 || activeFolderUploads.length > 0) && (
               <section className="space-y-3">
                 <h3 className="text-sm font-semibold text-text-primary tracking-tight">Files</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 sm:gap-4.5">
+                  {/* Optimistic In-Grid Uploading Cards */}
+                  {activeFolderUploads.map((item) => (
+                    <DriveUploadingCard
+                      key={item.id}
+                      item={item}
+                      onCancel={onCancelUpload ? () => onCancelUpload(item.id) : undefined}
+                    />
+                  ))}
                   {sortedFiles.map((file) => (
                     <DriveFileCard
                       key={file.id}
@@ -314,6 +421,8 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
           /* List View */
           <DriveListView
             items={[...sortedFolders, ...sortedFiles]}
+            uploadingItems={activeFolderUploads}
+            onCancelUpload={onCancelUpload}
             selectedIds={selectedIds}
             onToggleSelect={onToggleSelect}
             onSelectAll={onSelectAll}
@@ -332,19 +441,23 @@ export const DriveMainView: React.FC<DriveMainViewProps> = ({
 
       {/* 5. Drag-and-Drop Full-Panel Overlay */}
       {isDragOverOverlay && (
-        <div className="absolute inset-0 z-40 bg-accent/10 border-2 border-dashed border-accent flex flex-col items-center justify-center p-6 backdrop-blur-[2px] pointer-events-none animate-in fade-in duration-100">
-          <div className="p-4 rounded-full bg-surface shadow-lg text-accent mb-3">
-            <Icon name="upload" size={36} />
+        <div className="absolute inset-3 sm:inset-5 z-40 bg-[#E8F0FE]/95 dark:bg-[#1A2733]/95 border-2 border-dashed border-[#1A73E8] dark:border-[#8AB4F8] rounded-3xl flex flex-col items-center justify-center p-8 backdrop-blur-md pointer-events-none animate-in fade-in zoom-in-95 duration-150 shadow-2xl">
+          <div className="w-20 h-20 rounded-3xl bg-surface/90 dark:bg-[#1E1F20]/90 shadow-xl border border-[#1A73E8]/20 flex items-center justify-center text-[#1A73E8] dark:text-[#8AB4F8] mb-4 animate-bounce">
+            <Icon name="upload" size={40} />
           </div>
-          <h3 className="text-lg font-semibold text-text-primary">
+          <h3 className="text-xl font-semibold text-text-primary text-center">
             Drop files to upload to{' '}
-            <strong className="text-accent">
+            <strong className="text-[#1A73E8] dark:text-[#8AB4F8]">
               {currentFolder ? currentFolder.name : 'My Drive'}
             </strong>
           </h3>
-          <p className="text-xs text-text-secondary mt-1">
-            Files will be encrypted with AES-256-GCM before upload
+          <p className="text-xs text-text-secondary mt-1.5 text-center">
+            Files will be encrypted with client-side AES-256-GCM before reaching Telegram
           </p>
+          <div className="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A73E8]/10 text-[#1A73E8] dark:text-[#8AB4F8] text-xs font-medium">
+            <Icon name="shield" size={14} />
+            Zero-knowledge encrypted cloud storage
+          </div>
         </div>
       )}
     </div>

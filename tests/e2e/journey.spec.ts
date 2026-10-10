@@ -116,6 +116,11 @@ test.describe('TeleVault End-to-End User Journey', () => {
 
     // Drive grid in main should display item
     await expect(page.locator('main span[title*="vacation-photo"]').first()).toBeVisible({ timeout: 15000 });
+
+    // Wait for client encryption, Telegram upload, and commit to complete
+    await expect(page.locator('button[aria-label="File options"]').first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('text=/upload.*complete/i')).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('main img[alt*="vacation-photo"]')).toBeVisible({ timeout: 10000 });
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, '06_grid_with_media.png') });
   });
 
